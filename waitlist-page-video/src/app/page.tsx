@@ -23,13 +23,13 @@ const contentContainer = {
   visible: {
     transition: {
       staggerChildren: 0.14,
-      delayChildren: 0.22,
+      delayChildren: 1,
     },
   },
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 22, filter: "blur(14px)" },
+  hidden: { opacity: 0, y: 22, filter: "blur(200px)" },
   visible: {
     opacity: 1,
     y: 0,
