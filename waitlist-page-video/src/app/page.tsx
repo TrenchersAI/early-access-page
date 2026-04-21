@@ -221,7 +221,7 @@ export default function Home() {
         onTimeUpdate={(e) => maybeRevealBeforeEnd(e.currentTarget)}
         aria-hidden
       >
-        <source src="/falcon-video.mp4" type="video/mp4" />
+        <source src="/falcon-video-v3.mp4" type="video/mp4" />
       </video>
       {!revealUi && showPlayFallback && (
         <button
