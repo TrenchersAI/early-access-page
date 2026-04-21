@@ -206,7 +206,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-dvh w-full flex-1 flex-col">
+    <div className="flex h-dvh w-full flex-1 flex-col overflow-hidden">
       {/* Fixed layer: avoid flex/transform ancestors; object-center so crop stays stable */}
       <video
         ref={videoRef}
@@ -239,9 +239,7 @@ export default function Home() {
       {revealUi && <Navbar />}
       <section
         id="join"
-        className={`relative z-10 flex w-full flex-1 flex-col items-center justify-center overflow-hidden px-6 py-12 text-center sm:py-20 ${
-          revealUi ? "min-h-0" : "min-h-dvh"
-        }`}
+        className="relative z-10 flex min-h-0 w-full flex-1 flex-col items-center justify-center overflow-hidden px-6 py-12 text-center sm:py-20"
       >
         {revealUi && (
           <>
