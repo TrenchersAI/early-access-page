@@ -21,12 +21,12 @@ export default function Footer() {
         </p>
         <ul className="flex flex-wrap items-center gap-6 text-sm text-white/75">
           <li>
-            <Link href="#" className="transition hover:text-white">
+            <Link href="/terms" className="transition hover:text-white">
               Terms
             </Link>
           </li>
           <li>
-            <Link href="#" className="transition hover:text-white">
+            <Link href="/privacy" className="transition hover:text-white">
               Privacy
             </Link>
           </li>
