@@ -1,0 +1,78 @@
+export default function SnipeIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      x="0px"
+      y="0px"
+      width="16px"
+      height="16px"
+      viewBox="0 0 18 18"
+    >
+      <circle
+        cx="9"
+        cy="9"
+        r="6.5"
+        fill="none"
+        stroke="rgba(0, 0, 0, 1)"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+      ></circle>
+      <circle
+        cx="9"
+        cy="9"
+        r="2.25"
+        fill="none"
+        stroke="rgba(0, 0, 0, 1)"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+        data-color="color-2"
+      ></circle>
+      <line
+        x1="9"
+        y1="1"
+        x2="9"
+        y2="2.5"
+        fill="none"
+        stroke="rgba(0, 0, 0, 1)"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+      ></line>
+      <line
+        x1="17"
+        y1="9"
+        x2="15.5"
+        y2="9"
+        fill="none"
+        stroke="rgba(0, 0, 0, 1)"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+      ></line>
+      <line
+        x1="9"
+        y1="17"
+        x2="9"
+        y2="15.5"
+        fill="none"
+        stroke="rgba(0, 0, 0, 1)"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+      ></line>
+      <line
+        x1="1"
+        y1="9"
+        x2="2.5"
+        y2="9"
+        fill="none"
+        stroke="rgba(0, 0, 0, 1)"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+      ></line>
+    </svg>
+  );
+}
