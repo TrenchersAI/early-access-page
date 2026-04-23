@@ -1,0 +1,174 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #030303;
+  color: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.email-shell {
+  width: 100%;
+  min-height: 100vh;
+  padding: 24px 12px;
+  background: radial-gradient(circle at top, #101010 0%, #030303 62%);
+}
+
+.email-card {
+  width: 100%;
+  max-width: 760px;
+  border-collapse: collapse;
+  background: #070707;
+  border: 1px solid #1a1a1a;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.navbar {
+  padding: 16px 24px;
+  border-bottom: 1px solid #1a1a1a;
+  background: #050505;
+}
+
+.brand-cell {
+  white-space: nowrap;
+}
+
+.logo-img {
+  display: inline-block;
+  width: 180px;
+  height: auto;
+  vertical-align: middle;
+}
+
+.nav-text {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.hero {
+  text-align: center;
+  padding: 56px 32px 44px;
+  background: linear-gradient(180deg, #0b0b0b 0%, #050505 100%);
+}
+
+h1 {
+  margin: 0;
+  max-width: 26ch;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.otp-label {
+  margin: 18px 0 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.otp-code {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 10px 18px;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  background: #0d0d0d;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #ffffff;
+}
+
+.otp-note {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.footer {
+  padding: 14px 24px 18px;
+  border-top: 1px solid #1a1a1a;
+  background: #050505;
+}
+
+.footer-left,
+.footer-right {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+}
+
+.footer-link {
+  color: rgba(255, 255, 255, 0.82);
+  text-decoration: none;
+}
+
+@media (max-width: 640px) {
+  .email-shell {
+    padding: 16px 8px;
+  }
+
+  .navbar {
+    padding: 12px 14px;
+  }
+
+  .navbar td {
+    display: block;
+    width: 100%;
+    text-align: center !important;
+  }
+
+  .brand-cell {
+    margin-bottom: 10px;
+  }
+
+  .logo-img {
+    width: 140px;
+  }
+
+  .hero {
+    padding: 34px 14px 26px;
+  }
+
+  h1 {
+    max-width: 18ch;
+    font-size: 23px;
+  }
+
+  .otp-code {
+    font-size: 24px;
+    letter-spacing: 0.14em;
+    padding: 10px 14px;
+  }
+
+  .footer {
+    padding: 12px 14px 14px;
+  }
+
+  .footer td {
+    display: block;
+    width: 100%;
+    text-align: center !important;
+  }
+
+  .footer-left,
+  .footer-right {
+    white-space: normal;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .footer-right {
+    margin-top: 8px;
+  }
+}
