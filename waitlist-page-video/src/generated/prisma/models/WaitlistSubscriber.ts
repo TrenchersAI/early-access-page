@@ -20,13 +20,30 @@ export type WaitlistSubscriberModel = runtime.Types.Result.DefaultSelection<Pris
 
 export type AggregateWaitlistSubscriber = {
   _count: WaitlistSubscriberCountAggregateOutputType | null
+  _avg: WaitlistSubscriberAvgAggregateOutputType | null
+  _sum: WaitlistSubscriberSumAggregateOutputType | null
   _min: WaitlistSubscriberMinAggregateOutputType | null
   _max: WaitlistSubscriberMaxAggregateOutputType | null
+}
+
+export type WaitlistSubscriberAvgAggregateOutputType = {
+  referralsMade: number | null
+}
+
+export type WaitlistSubscriberSumAggregateOutputType = {
+  referralsMade: number | null
 }
 
 export type WaitlistSubscriberMinAggregateOutputType = {
   id: string | null
   email: string | null
+  referralCode: string | null
+  referralsMade: number | null
+  referredById: string | null
+  isVerified: boolean | null
+  verifiedAt: Date | null
+  otpCode: string | null
+  otpExpiresAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -34,6 +51,13 @@ export type WaitlistSubscriberMinAggregateOutputType = {
 export type WaitlistSubscriberMaxAggregateOutputType = {
   id: string | null
   email: string | null
+  referralCode: string | null
+  referralsMade: number | null
+  referredById: string | null
+  isVerified: boolean | null
+  verifiedAt: Date | null
+  otpCode: string | null
+  otpExpiresAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -41,15 +65,37 @@ export type WaitlistSubscriberMaxAggregateOutputType = {
 export type WaitlistSubscriberCountAggregateOutputType = {
   id: number
   email: number
+  referralCode: number
+  referralsMade: number
+  referredById: number
+  isVerified: number
+  verifiedAt: number
+  otpCode: number
+  otpExpiresAt: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
 
+export type WaitlistSubscriberAvgAggregateInputType = {
+  referralsMade?: true
+}
+
+export type WaitlistSubscriberSumAggregateInputType = {
+  referralsMade?: true
+}
+
 export type WaitlistSubscriberMinAggregateInputType = {
   id?: true
   email?: true
+  referralCode?: true
+  referralsMade?: true
+  referredById?: true
+  isVerified?: true
+  verifiedAt?: true
+  otpCode?: true
+  otpExpiresAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -57,6 +103,13 @@ export type WaitlistSubscriberMinAggregateInputType = {
 export type WaitlistSubscriberMaxAggregateInputType = {
   id?: true
   email?: true
+  referralCode?: true
+  referralsMade?: true
+  referredById?: true
+  isVerified?: true
+  verifiedAt?: true
+  otpCode?: true
+  otpExpiresAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -64,6 +117,13 @@ export type WaitlistSubscriberMaxAggregateInputType = {
 export type WaitlistSubscriberCountAggregateInputType = {
   id?: true
   email?: true
+  referralCode?: true
+  referralsMade?: true
+  referredById?: true
+  isVerified?: true
+  verifiedAt?: true
+  otpCode?: true
+  otpExpiresAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -107,6 +167,18 @@ export type WaitlistSubscriberAggregateArgs<ExtArgs extends runtime.Types.Extens
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: WaitlistSubscriberAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: WaitlistSubscriberSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: WaitlistSubscriberMinAggregateInputType
@@ -137,6 +209,8 @@ export type WaitlistSubscriberGroupByArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   _count?: WaitlistSubscriberCountAggregateInputType | true
+  _avg?: WaitlistSubscriberAvgAggregateInputType
+  _sum?: WaitlistSubscriberSumAggregateInputType
   _min?: WaitlistSubscriberMinAggregateInputType
   _max?: WaitlistSubscriberMaxAggregateInputType
 }
@@ -144,9 +218,18 @@ export type WaitlistSubscriberGroupByArgs<ExtArgs extends runtime.Types.Extensio
 export type WaitlistSubscriberGroupByOutputType = {
   id: string
   email: string
+  referralCode: string
+  referralsMade: number
+  referredById: string | null
+  isVerified: boolean
+  verifiedAt: Date | null
+  otpCode: string | null
+  otpExpiresAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: WaitlistSubscriberCountAggregateOutputType | null
+  _avg: WaitlistSubscriberAvgAggregateOutputType | null
+  _sum: WaitlistSubscriberSumAggregateOutputType | null
   _min: WaitlistSubscriberMinAggregateOutputType | null
   _max: WaitlistSubscriberMaxAggregateOutputType | null
 }
@@ -172,35 +255,71 @@ export type WaitlistSubscriberWhereInput = {
   NOT?: Prisma.WaitlistSubscriberWhereInput | Prisma.WaitlistSubscriberWhereInput[]
   id?: Prisma.StringFilter<"WaitlistSubscriber"> | string
   email?: Prisma.StringFilter<"WaitlistSubscriber"> | string
+  referralCode?: Prisma.StringFilter<"WaitlistSubscriber"> | string
+  referralsMade?: Prisma.IntFilter<"WaitlistSubscriber"> | number
+  referredById?: Prisma.StringNullableFilter<"WaitlistSubscriber"> | string | null
+  isVerified?: Prisma.BoolFilter<"WaitlistSubscriber"> | boolean
+  verifiedAt?: Prisma.DateTimeNullableFilter<"WaitlistSubscriber"> | Date | string | null
+  otpCode?: Prisma.StringNullableFilter<"WaitlistSubscriber"> | string | null
+  otpExpiresAt?: Prisma.DateTimeNullableFilter<"WaitlistSubscriber"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"WaitlistSubscriber"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"WaitlistSubscriber"> | Date | string
+  referredBy?: Prisma.XOR<Prisma.WaitlistSubscriberNullableScalarRelationFilter, Prisma.WaitlistSubscriberWhereInput> | null
+  referrals?: Prisma.WaitlistSubscriberListRelationFilter
 }
 
 export type WaitlistSubscriberOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  referralCode?: Prisma.SortOrder
+  referralsMade?: Prisma.SortOrder
+  referredById?: Prisma.SortOrderInput | Prisma.SortOrder
+  isVerified?: Prisma.SortOrder
+  verifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  otpCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  otpExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  referredBy?: Prisma.WaitlistSubscriberOrderByWithRelationInput
+  referrals?: Prisma.WaitlistSubscriberOrderByRelationAggregateInput
 }
 
 export type WaitlistSubscriberWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   email?: string
+  referralCode?: string
   AND?: Prisma.WaitlistSubscriberWhereInput | Prisma.WaitlistSubscriberWhereInput[]
   OR?: Prisma.WaitlistSubscriberWhereInput[]
   NOT?: Prisma.WaitlistSubscriberWhereInput | Prisma.WaitlistSubscriberWhereInput[]
+  referralsMade?: Prisma.IntFilter<"WaitlistSubscriber"> | number
+  referredById?: Prisma.StringNullableFilter<"WaitlistSubscriber"> | string | null
+  isVerified?: Prisma.BoolFilter<"WaitlistSubscriber"> | boolean
+  verifiedAt?: Prisma.DateTimeNullableFilter<"WaitlistSubscriber"> | Date | string | null
+  otpCode?: Prisma.StringNullableFilter<"WaitlistSubscriber"> | string | null
+  otpExpiresAt?: Prisma.DateTimeNullableFilter<"WaitlistSubscriber"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"WaitlistSubscriber"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"WaitlistSubscriber"> | Date | string
-}, "id" | "email">
+  referredBy?: Prisma.XOR<Prisma.WaitlistSubscriberNullableScalarRelationFilter, Prisma.WaitlistSubscriberWhereInput> | null
+  referrals?: Prisma.WaitlistSubscriberListRelationFilter
+}, "id" | "email" | "referralCode">
 
 export type WaitlistSubscriberOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  referralCode?: Prisma.SortOrder
+  referralsMade?: Prisma.SortOrder
+  referredById?: Prisma.SortOrderInput | Prisma.SortOrder
+  isVerified?: Prisma.SortOrder
+  verifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  otpCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  otpExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.WaitlistSubscriberCountOrderByAggregateInput
+  _avg?: Prisma.WaitlistSubscriberAvgOrderByAggregateInput
   _max?: Prisma.WaitlistSubscriberMaxOrderByAggregateInput
   _min?: Prisma.WaitlistSubscriberMinOrderByAggregateInput
+  _sum?: Prisma.WaitlistSubscriberSumOrderByAggregateInput
 }
 
 export type WaitlistSubscriberScalarWhereWithAggregatesInput = {
@@ -209,6 +328,13 @@ export type WaitlistSubscriberScalarWhereWithAggregatesInput = {
   NOT?: Prisma.WaitlistSubscriberScalarWhereWithAggregatesInput | Prisma.WaitlistSubscriberScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"WaitlistSubscriber"> | string
   email?: Prisma.StringWithAggregatesFilter<"WaitlistSubscriber"> | string
+  referralCode?: Prisma.StringWithAggregatesFilter<"WaitlistSubscriber"> | string
+  referralsMade?: Prisma.IntWithAggregatesFilter<"WaitlistSubscriber"> | number
+  referredById?: Prisma.StringNullableWithAggregatesFilter<"WaitlistSubscriber"> | string | null
+  isVerified?: Prisma.BoolWithAggregatesFilter<"WaitlistSubscriber"> | boolean
+  verifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"WaitlistSubscriber"> | Date | string | null
+  otpCode?: Prisma.StringNullableWithAggregatesFilter<"WaitlistSubscriber"> | string | null
+  otpExpiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"WaitlistSubscriber"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"WaitlistSubscriber"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"WaitlistSubscriber"> | Date | string
 }
@@ -216,34 +342,73 @@ export type WaitlistSubscriberScalarWhereWithAggregatesInput = {
 export type WaitlistSubscriberCreateInput = {
   id?: string
   email: string
+  referralCode: string
+  referralsMade?: number
+  isVerified?: boolean
+  verifiedAt?: Date | string | null
+  otpCode?: string | null
+  otpExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  referredBy?: Prisma.WaitlistSubscriberCreateNestedOneWithoutReferralsInput
+  referrals?: Prisma.WaitlistSubscriberCreateNestedManyWithoutReferredByInput
 }
 
 export type WaitlistSubscriberUncheckedCreateInput = {
   id?: string
   email: string
+  referralCode: string
+  referralsMade?: number
+  referredById?: string | null
+  isVerified?: boolean
+  verifiedAt?: Date | string | null
+  otpCode?: string | null
+  otpExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  referrals?: Prisma.WaitlistSubscriberUncheckedCreateNestedManyWithoutReferredByInput
 }
 
 export type WaitlistSubscriberUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  referralCode?: Prisma.StringFieldUpdateOperationsInput | string
+  referralsMade?: Prisma.IntFieldUpdateOperationsInput | number
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otpCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  otpExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  referredBy?: Prisma.WaitlistSubscriberUpdateOneWithoutReferralsNestedInput
+  referrals?: Prisma.WaitlistSubscriberUpdateManyWithoutReferredByNestedInput
 }
 
 export type WaitlistSubscriberUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  referralCode?: Prisma.StringFieldUpdateOperationsInput | string
+  referralsMade?: Prisma.IntFieldUpdateOperationsInput | number
+  referredById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otpCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  otpExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  referrals?: Prisma.WaitlistSubscriberUncheckedUpdateManyWithoutReferredByNestedInput
 }
 
 export type WaitlistSubscriberCreateManyInput = {
   id?: string
   email: string
+  referralCode: string
+  referralsMade?: number
+  referredById?: string | null
+  isVerified?: boolean
+  verifiedAt?: Date | string | null
+  otpCode?: string | null
+  otpExpiresAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -251,6 +416,12 @@ export type WaitlistSubscriberCreateManyInput = {
 export type WaitlistSubscriberUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  referralCode?: Prisma.StringFieldUpdateOperationsInput | string
+  referralsMade?: Prisma.IntFieldUpdateOperationsInput | number
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otpCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  otpExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -258,20 +429,60 @@ export type WaitlistSubscriberUpdateManyMutationInput = {
 export type WaitlistSubscriberUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  referralCode?: Prisma.StringFieldUpdateOperationsInput | string
+  referralsMade?: Prisma.IntFieldUpdateOperationsInput | number
+  referredById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otpCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  otpExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type WaitlistSubscriberNullableScalarRelationFilter = {
+  is?: Prisma.WaitlistSubscriberWhereInput | null
+  isNot?: Prisma.WaitlistSubscriberWhereInput | null
+}
+
+export type WaitlistSubscriberListRelationFilter = {
+  every?: Prisma.WaitlistSubscriberWhereInput
+  some?: Prisma.WaitlistSubscriberWhereInput
+  none?: Prisma.WaitlistSubscriberWhereInput
+}
+
+export type WaitlistSubscriberOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type WaitlistSubscriberCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  referralCode?: Prisma.SortOrder
+  referralsMade?: Prisma.SortOrder
+  referredById?: Prisma.SortOrder
+  isVerified?: Prisma.SortOrder
+  verifiedAt?: Prisma.SortOrder
+  otpCode?: Prisma.SortOrder
+  otpExpiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type WaitlistSubscriberAvgOrderByAggregateInput = {
+  referralsMade?: Prisma.SortOrder
 }
 
 export type WaitlistSubscriberMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  referralCode?: Prisma.SortOrder
+  referralsMade?: Prisma.SortOrder
+  referredById?: Prisma.SortOrder
+  isVerified?: Prisma.SortOrder
+  verifiedAt?: Prisma.SortOrder
+  otpCode?: Prisma.SortOrder
+  otpExpiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -279,56 +490,425 @@ export type WaitlistSubscriberMaxOrderByAggregateInput = {
 export type WaitlistSubscriberMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  referralCode?: Prisma.SortOrder
+  referralsMade?: Prisma.SortOrder
+  referredById?: Prisma.SortOrder
+  isVerified?: Prisma.SortOrder
+  verifiedAt?: Prisma.SortOrder
+  otpCode?: Prisma.SortOrder
+  otpExpiresAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type WaitlistSubscriberSumOrderByAggregateInput = {
+  referralsMade?: Prisma.SortOrder
+}
+
+export type WaitlistSubscriberCreateNestedOneWithoutReferralsInput = {
+  create?: Prisma.XOR<Prisma.WaitlistSubscriberCreateWithoutReferralsInput, Prisma.WaitlistSubscriberUncheckedCreateWithoutReferralsInput>
+  connectOrCreate?: Prisma.WaitlistSubscriberCreateOrConnectWithoutReferralsInput
+  connect?: Prisma.WaitlistSubscriberWhereUniqueInput
+}
+
+export type WaitlistSubscriberCreateNestedManyWithoutReferredByInput = {
+  create?: Prisma.XOR<Prisma.WaitlistSubscriberCreateWithoutReferredByInput, Prisma.WaitlistSubscriberUncheckedCreateWithoutReferredByInput> | Prisma.WaitlistSubscriberCreateWithoutReferredByInput[] | Prisma.WaitlistSubscriberUncheckedCreateWithoutReferredByInput[]
+  connectOrCreate?: Prisma.WaitlistSubscriberCreateOrConnectWithoutReferredByInput | Prisma.WaitlistSubscriberCreateOrConnectWithoutReferredByInput[]
+  createMany?: Prisma.WaitlistSubscriberCreateManyReferredByInputEnvelope
+  connect?: Prisma.WaitlistSubscriberWhereUniqueInput | Prisma.WaitlistSubscriberWhereUniqueInput[]
+}
+
+export type WaitlistSubscriberUncheckedCreateNestedManyWithoutReferredByInput = {
+  create?: Prisma.XOR<Prisma.WaitlistSubscriberCreateWithoutReferredByInput, Prisma.WaitlistSubscriberUncheckedCreateWithoutReferredByInput> | Prisma.WaitlistSubscriberCreateWithoutReferredByInput[] | Prisma.WaitlistSubscriberUncheckedCreateWithoutReferredByInput[]
+  connectOrCreate?: Prisma.WaitlistSubscriberCreateOrConnectWithoutReferredByInput | Prisma.WaitlistSubscriberCreateOrConnectWithoutReferredByInput[]
+  createMany?: Prisma.WaitlistSubscriberCreateManyReferredByInputEnvelope
+  connect?: Prisma.WaitlistSubscriberWhereUniqueInput | Prisma.WaitlistSubscriberWhereUniqueInput[]
 }
 
 export type StringFieldUpdateOperationsInput = {
   set?: string
 }
 
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
 }
 
+export type WaitlistSubscriberUpdateOneWithoutReferralsNestedInput = {
+  create?: Prisma.XOR<Prisma.WaitlistSubscriberCreateWithoutReferralsInput, Prisma.WaitlistSubscriberUncheckedCreateWithoutReferralsInput>
+  connectOrCreate?: Prisma.WaitlistSubscriberCreateOrConnectWithoutReferralsInput
+  upsert?: Prisma.WaitlistSubscriberUpsertWithoutReferralsInput
+  disconnect?: Prisma.WaitlistSubscriberWhereInput | boolean
+  delete?: Prisma.WaitlistSubscriberWhereInput | boolean
+  connect?: Prisma.WaitlistSubscriberWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WaitlistSubscriberUpdateToOneWithWhereWithoutReferralsInput, Prisma.WaitlistSubscriberUpdateWithoutReferralsInput>, Prisma.WaitlistSubscriberUncheckedUpdateWithoutReferralsInput>
+}
+
+export type WaitlistSubscriberUpdateManyWithoutReferredByNestedInput = {
+  create?: Prisma.XOR<Prisma.WaitlistSubscriberCreateWithoutReferredByInput, Prisma.WaitlistSubscriberUncheckedCreateWithoutReferredByInput> | Prisma.WaitlistSubscriberCreateWithoutReferredByInput[] | Prisma.WaitlistSubscriberUncheckedCreateWithoutReferredByInput[]
+  connectOrCreate?: Prisma.WaitlistSubscriberCreateOrConnectWithoutReferredByInput | Prisma.WaitlistSubscriberCreateOrConnectWithoutReferredByInput[]
+  upsert?: Prisma.WaitlistSubscriberUpsertWithWhereUniqueWithoutReferredByInput | Prisma.WaitlistSubscriberUpsertWithWhereUniqueWithoutReferredByInput[]
+  createMany?: Prisma.WaitlistSubscriberCreateManyReferredByInputEnvelope
+  set?: Prisma.WaitlistSubscriberWhereUniqueInput | Prisma.WaitlistSubscriberWhereUniqueInput[]
+  disconnect?: Prisma.WaitlistSubscriberWhereUniqueInput | Prisma.WaitlistSubscriberWhereUniqueInput[]
+  delete?: Prisma.WaitlistSubscriberWhereUniqueInput | Prisma.WaitlistSubscriberWhereUniqueInput[]
+  connect?: Prisma.WaitlistSubscriberWhereUniqueInput | Prisma.WaitlistSubscriberWhereUniqueInput[]
+  update?: Prisma.WaitlistSubscriberUpdateWithWhereUniqueWithoutReferredByInput | Prisma.WaitlistSubscriberUpdateWithWhereUniqueWithoutReferredByInput[]
+  updateMany?: Prisma.WaitlistSubscriberUpdateManyWithWhereWithoutReferredByInput | Prisma.WaitlistSubscriberUpdateManyWithWhereWithoutReferredByInput[]
+  deleteMany?: Prisma.WaitlistSubscriberScalarWhereInput | Prisma.WaitlistSubscriberScalarWhereInput[]
+}
+
+export type WaitlistSubscriberUncheckedUpdateManyWithoutReferredByNestedInput = {
+  create?: Prisma.XOR<Prisma.WaitlistSubscriberCreateWithoutReferredByInput, Prisma.WaitlistSubscriberUncheckedCreateWithoutReferredByInput> | Prisma.WaitlistSubscriberCreateWithoutReferredByInput[] | Prisma.WaitlistSubscriberUncheckedCreateWithoutReferredByInput[]
+  connectOrCreate?: Prisma.WaitlistSubscriberCreateOrConnectWithoutReferredByInput | Prisma.WaitlistSubscriberCreateOrConnectWithoutReferredByInput[]
+  upsert?: Prisma.WaitlistSubscriberUpsertWithWhereUniqueWithoutReferredByInput | Prisma.WaitlistSubscriberUpsertWithWhereUniqueWithoutReferredByInput[]
+  createMany?: Prisma.WaitlistSubscriberCreateManyReferredByInputEnvelope
+  set?: Prisma.WaitlistSubscriberWhereUniqueInput | Prisma.WaitlistSubscriberWhereUniqueInput[]
+  disconnect?: Prisma.WaitlistSubscriberWhereUniqueInput | Prisma.WaitlistSubscriberWhereUniqueInput[]
+  delete?: Prisma.WaitlistSubscriberWhereUniqueInput | Prisma.WaitlistSubscriberWhereUniqueInput[]
+  connect?: Prisma.WaitlistSubscriberWhereUniqueInput | Prisma.WaitlistSubscriberWhereUniqueInput[]
+  update?: Prisma.WaitlistSubscriberUpdateWithWhereUniqueWithoutReferredByInput | Prisma.WaitlistSubscriberUpdateWithWhereUniqueWithoutReferredByInput[]
+  updateMany?: Prisma.WaitlistSubscriberUpdateManyWithWhereWithoutReferredByInput | Prisma.WaitlistSubscriberUpdateManyWithWhereWithoutReferredByInput[]
+  deleteMany?: Prisma.WaitlistSubscriberScalarWhereInput | Prisma.WaitlistSubscriberScalarWhereInput[]
+}
+
+export type WaitlistSubscriberCreateWithoutReferralsInput = {
+  id?: string
+  email: string
+  referralCode: string
+  referralsMade?: number
+  isVerified?: boolean
+  verifiedAt?: Date | string | null
+  otpCode?: string | null
+  otpExpiresAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  referredBy?: Prisma.WaitlistSubscriberCreateNestedOneWithoutReferralsInput
+}
+
+export type WaitlistSubscriberUncheckedCreateWithoutReferralsInput = {
+  id?: string
+  email: string
+  referralCode: string
+  referralsMade?: number
+  referredById?: string | null
+  isVerified?: boolean
+  verifiedAt?: Date | string | null
+  otpCode?: string | null
+  otpExpiresAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type WaitlistSubscriberCreateOrConnectWithoutReferralsInput = {
+  where: Prisma.WaitlistSubscriberWhereUniqueInput
+  create: Prisma.XOR<Prisma.WaitlistSubscriberCreateWithoutReferralsInput, Prisma.WaitlistSubscriberUncheckedCreateWithoutReferralsInput>
+}
+
+export type WaitlistSubscriberCreateWithoutReferredByInput = {
+  id?: string
+  email: string
+  referralCode: string
+  referralsMade?: number
+  isVerified?: boolean
+  verifiedAt?: Date | string | null
+  otpCode?: string | null
+  otpExpiresAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  referrals?: Prisma.WaitlistSubscriberCreateNestedManyWithoutReferredByInput
+}
+
+export type WaitlistSubscriberUncheckedCreateWithoutReferredByInput = {
+  id?: string
+  email: string
+  referralCode: string
+  referralsMade?: number
+  isVerified?: boolean
+  verifiedAt?: Date | string | null
+  otpCode?: string | null
+  otpExpiresAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  referrals?: Prisma.WaitlistSubscriberUncheckedCreateNestedManyWithoutReferredByInput
+}
+
+export type WaitlistSubscriberCreateOrConnectWithoutReferredByInput = {
+  where: Prisma.WaitlistSubscriberWhereUniqueInput
+  create: Prisma.XOR<Prisma.WaitlistSubscriberCreateWithoutReferredByInput, Prisma.WaitlistSubscriberUncheckedCreateWithoutReferredByInput>
+}
+
+export type WaitlistSubscriberCreateManyReferredByInputEnvelope = {
+  data: Prisma.WaitlistSubscriberCreateManyReferredByInput | Prisma.WaitlistSubscriberCreateManyReferredByInput[]
+  skipDuplicates?: boolean
+}
+
+export type WaitlistSubscriberUpsertWithoutReferralsInput = {
+  update: Prisma.XOR<Prisma.WaitlistSubscriberUpdateWithoutReferralsInput, Prisma.WaitlistSubscriberUncheckedUpdateWithoutReferralsInput>
+  create: Prisma.XOR<Prisma.WaitlistSubscriberCreateWithoutReferralsInput, Prisma.WaitlistSubscriberUncheckedCreateWithoutReferralsInput>
+  where?: Prisma.WaitlistSubscriberWhereInput
+}
+
+export type WaitlistSubscriberUpdateToOneWithWhereWithoutReferralsInput = {
+  where?: Prisma.WaitlistSubscriberWhereInput
+  data: Prisma.XOR<Prisma.WaitlistSubscriberUpdateWithoutReferralsInput, Prisma.WaitlistSubscriberUncheckedUpdateWithoutReferralsInput>
+}
+
+export type WaitlistSubscriberUpdateWithoutReferralsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  referralCode?: Prisma.StringFieldUpdateOperationsInput | string
+  referralsMade?: Prisma.IntFieldUpdateOperationsInput | number
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otpCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  otpExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  referredBy?: Prisma.WaitlistSubscriberUpdateOneWithoutReferralsNestedInput
+}
+
+export type WaitlistSubscriberUncheckedUpdateWithoutReferralsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  referralCode?: Prisma.StringFieldUpdateOperationsInput | string
+  referralsMade?: Prisma.IntFieldUpdateOperationsInput | number
+  referredById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otpCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  otpExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type WaitlistSubscriberUpsertWithWhereUniqueWithoutReferredByInput = {
+  where: Prisma.WaitlistSubscriberWhereUniqueInput
+  update: Prisma.XOR<Prisma.WaitlistSubscriberUpdateWithoutReferredByInput, Prisma.WaitlistSubscriberUncheckedUpdateWithoutReferredByInput>
+  create: Prisma.XOR<Prisma.WaitlistSubscriberCreateWithoutReferredByInput, Prisma.WaitlistSubscriberUncheckedCreateWithoutReferredByInput>
+}
+
+export type WaitlistSubscriberUpdateWithWhereUniqueWithoutReferredByInput = {
+  where: Prisma.WaitlistSubscriberWhereUniqueInput
+  data: Prisma.XOR<Prisma.WaitlistSubscriberUpdateWithoutReferredByInput, Prisma.WaitlistSubscriberUncheckedUpdateWithoutReferredByInput>
+}
+
+export type WaitlistSubscriberUpdateManyWithWhereWithoutReferredByInput = {
+  where: Prisma.WaitlistSubscriberScalarWhereInput
+  data: Prisma.XOR<Prisma.WaitlistSubscriberUpdateManyMutationInput, Prisma.WaitlistSubscriberUncheckedUpdateManyWithoutReferredByInput>
+}
+
+export type WaitlistSubscriberScalarWhereInput = {
+  AND?: Prisma.WaitlistSubscriberScalarWhereInput | Prisma.WaitlistSubscriberScalarWhereInput[]
+  OR?: Prisma.WaitlistSubscriberScalarWhereInput[]
+  NOT?: Prisma.WaitlistSubscriberScalarWhereInput | Prisma.WaitlistSubscriberScalarWhereInput[]
+  id?: Prisma.StringFilter<"WaitlistSubscriber"> | string
+  email?: Prisma.StringFilter<"WaitlistSubscriber"> | string
+  referralCode?: Prisma.StringFilter<"WaitlistSubscriber"> | string
+  referralsMade?: Prisma.IntFilter<"WaitlistSubscriber"> | number
+  referredById?: Prisma.StringNullableFilter<"WaitlistSubscriber"> | string | null
+  isVerified?: Prisma.BoolFilter<"WaitlistSubscriber"> | boolean
+  verifiedAt?: Prisma.DateTimeNullableFilter<"WaitlistSubscriber"> | Date | string | null
+  otpCode?: Prisma.StringNullableFilter<"WaitlistSubscriber"> | string | null
+  otpExpiresAt?: Prisma.DateTimeNullableFilter<"WaitlistSubscriber"> | Date | string | null
+  createdAt?: Prisma.DateTimeFilter<"WaitlistSubscriber"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"WaitlistSubscriber"> | Date | string
+}
+
+export type WaitlistSubscriberCreateManyReferredByInput = {
+  id?: string
+  email: string
+  referralCode: string
+  referralsMade?: number
+  isVerified?: boolean
+  verifiedAt?: Date | string | null
+  otpCode?: string | null
+  otpExpiresAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type WaitlistSubscriberUpdateWithoutReferredByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  referralCode?: Prisma.StringFieldUpdateOperationsInput | string
+  referralsMade?: Prisma.IntFieldUpdateOperationsInput | number
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otpCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  otpExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  referrals?: Prisma.WaitlistSubscriberUpdateManyWithoutReferredByNestedInput
+}
+
+export type WaitlistSubscriberUncheckedUpdateWithoutReferredByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  referralCode?: Prisma.StringFieldUpdateOperationsInput | string
+  referralsMade?: Prisma.IntFieldUpdateOperationsInput | number
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otpCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  otpExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  referrals?: Prisma.WaitlistSubscriberUncheckedUpdateManyWithoutReferredByNestedInput
+}
+
+export type WaitlistSubscriberUncheckedUpdateManyWithoutReferredByInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  referralCode?: Prisma.StringFieldUpdateOperationsInput | string
+  referralsMade?: Prisma.IntFieldUpdateOperationsInput | number
+  isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otpCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  otpExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+
+/**
+ * Count Type WaitlistSubscriberCountOutputType
+ */
+
+export type WaitlistSubscriberCountOutputType = {
+  referrals: number
+}
+
+export type WaitlistSubscriberCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  referrals?: boolean | WaitlistSubscriberCountOutputTypeCountReferralsArgs
+}
+
+/**
+ * WaitlistSubscriberCountOutputType without action
+ */
+export type WaitlistSubscriberCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WaitlistSubscriberCountOutputType
+   */
+  select?: Prisma.WaitlistSubscriberCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * WaitlistSubscriberCountOutputType without action
+ */
+export type WaitlistSubscriberCountOutputTypeCountReferralsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WaitlistSubscriberWhereInput
+}
 
 
 export type WaitlistSubscriberSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   email?: boolean
+  referralCode?: boolean
+  referralsMade?: boolean
+  referredById?: boolean
+  isVerified?: boolean
+  verifiedAt?: boolean
+  otpCode?: boolean
+  otpExpiresAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  referredBy?: boolean | Prisma.WaitlistSubscriber$referredByArgs<ExtArgs>
+  referrals?: boolean | Prisma.WaitlistSubscriber$referralsArgs<ExtArgs>
+  _count?: boolean | Prisma.WaitlistSubscriberCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["waitlistSubscriber"]>
 
 export type WaitlistSubscriberSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   email?: boolean
+  referralCode?: boolean
+  referralsMade?: boolean
+  referredById?: boolean
+  isVerified?: boolean
+  verifiedAt?: boolean
+  otpCode?: boolean
+  otpExpiresAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  referredBy?: boolean | Prisma.WaitlistSubscriber$referredByArgs<ExtArgs>
 }, ExtArgs["result"]["waitlistSubscriber"]>
 
 export type WaitlistSubscriberSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   email?: boolean
+  referralCode?: boolean
+  referralsMade?: boolean
+  referredById?: boolean
+  isVerified?: boolean
+  verifiedAt?: boolean
+  otpCode?: boolean
+  otpExpiresAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  referredBy?: boolean | Prisma.WaitlistSubscriber$referredByArgs<ExtArgs>
 }, ExtArgs["result"]["waitlistSubscriber"]>
 
 export type WaitlistSubscriberSelectScalar = {
   id?: boolean
   email?: boolean
+  referralCode?: boolean
+  referralsMade?: boolean
+  referredById?: boolean
+  isVerified?: boolean
+  verifiedAt?: boolean
+  otpCode?: boolean
+  otpExpiresAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type WaitlistSubscriberOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "createdAt" | "updatedAt", ExtArgs["result"]["waitlistSubscriber"]>
+export type WaitlistSubscriberOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "referralCode" | "referralsMade" | "referredById" | "isVerified" | "verifiedAt" | "otpCode" | "otpExpiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["waitlistSubscriber"]>
+export type WaitlistSubscriberInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  referredBy?: boolean | Prisma.WaitlistSubscriber$referredByArgs<ExtArgs>
+  referrals?: boolean | Prisma.WaitlistSubscriber$referralsArgs<ExtArgs>
+  _count?: boolean | Prisma.WaitlistSubscriberCountOutputTypeDefaultArgs<ExtArgs>
+}
+export type WaitlistSubscriberIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  referredBy?: boolean | Prisma.WaitlistSubscriber$referredByArgs<ExtArgs>
+}
+export type WaitlistSubscriberIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  referredBy?: boolean | Prisma.WaitlistSubscriber$referredByArgs<ExtArgs>
+}
 
 export type $WaitlistSubscriberPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "WaitlistSubscriber"
-  objects: {}
+  objects: {
+    referredBy: Prisma.$WaitlistSubscriberPayload<ExtArgs> | null
+    referrals: Prisma.$WaitlistSubscriberPayload<ExtArgs>[]
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     email: string
+    referralCode: string
+    referralsMade: number
+    referredById: string | null
+    isVerified: boolean
+    verifiedAt: Date | null
+    otpCode: string | null
+    otpExpiresAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["waitlistSubscriber"]>
@@ -725,6 +1305,8 @@ readonly fields: WaitlistSubscriberFieldRefs;
  */
 export interface Prisma__WaitlistSubscriberClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  referredBy<T extends Prisma.WaitlistSubscriber$referredByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WaitlistSubscriber$referredByArgs<ExtArgs>>): Prisma.Prisma__WaitlistSubscriberClient<runtime.Types.Result.GetResult<Prisma.$WaitlistSubscriberPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  referrals<T extends Prisma.WaitlistSubscriber$referralsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WaitlistSubscriber$referralsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WaitlistSubscriberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -756,6 +1338,13 @@ export interface Prisma__WaitlistSubscriberClient<T, Null = never, ExtArgs exten
 export interface WaitlistSubscriberFieldRefs {
   readonly id: Prisma.FieldRef<"WaitlistSubscriber", 'String'>
   readonly email: Prisma.FieldRef<"WaitlistSubscriber", 'String'>
+  readonly referralCode: Prisma.FieldRef<"WaitlistSubscriber", 'String'>
+  readonly referralsMade: Prisma.FieldRef<"WaitlistSubscriber", 'Int'>
+  readonly referredById: Prisma.FieldRef<"WaitlistSubscriber", 'String'>
+  readonly isVerified: Prisma.FieldRef<"WaitlistSubscriber", 'Boolean'>
+  readonly verifiedAt: Prisma.FieldRef<"WaitlistSubscriber", 'DateTime'>
+  readonly otpCode: Prisma.FieldRef<"WaitlistSubscriber", 'String'>
+  readonly otpExpiresAt: Prisma.FieldRef<"WaitlistSubscriber", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"WaitlistSubscriber", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"WaitlistSubscriber", 'DateTime'>
 }
@@ -775,6 +1364,10 @@ export type WaitlistSubscriberFindUniqueArgs<ExtArgs extends runtime.Types.Exten
    */
   omit?: Prisma.WaitlistSubscriberOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WaitlistSubscriberInclude<ExtArgs> | null
+  /**
    * Filter, which WaitlistSubscriber to fetch.
    */
   where: Prisma.WaitlistSubscriberWhereUniqueInput
@@ -793,6 +1386,10 @@ export type WaitlistSubscriberFindUniqueOrThrowArgs<ExtArgs extends runtime.Type
    */
   omit?: Prisma.WaitlistSubscriberOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WaitlistSubscriberInclude<ExtArgs> | null
+  /**
    * Filter, which WaitlistSubscriber to fetch.
    */
   where: Prisma.WaitlistSubscriberWhereUniqueInput
@@ -810,6 +1407,10 @@ export type WaitlistSubscriberFindFirstArgs<ExtArgs extends runtime.Types.Extens
    * Omit specific fields from the WaitlistSubscriber
    */
   omit?: Prisma.WaitlistSubscriberOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WaitlistSubscriberInclude<ExtArgs> | null
   /**
    * Filter, which WaitlistSubscriber to fetch.
    */
@@ -859,6 +1460,10 @@ export type WaitlistSubscriberFindFirstOrThrowArgs<ExtArgs extends runtime.Types
    */
   omit?: Prisma.WaitlistSubscriberOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WaitlistSubscriberInclude<ExtArgs> | null
+  /**
    * Filter, which WaitlistSubscriber to fetch.
    */
   where?: Prisma.WaitlistSubscriberWhereInput
@@ -906,6 +1511,10 @@ export type WaitlistSubscriberFindManyArgs<ExtArgs extends runtime.Types.Extensi
    * Omit specific fields from the WaitlistSubscriber
    */
   omit?: Prisma.WaitlistSubscriberOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WaitlistSubscriberInclude<ExtArgs> | null
   /**
    * Filter, which WaitlistSubscribers to fetch.
    */
@@ -955,6 +1564,10 @@ export type WaitlistSubscriberCreateArgs<ExtArgs extends runtime.Types.Extension
    */
   omit?: Prisma.WaitlistSubscriberOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WaitlistSubscriberInclude<ExtArgs> | null
+  /**
    * The data needed to create a WaitlistSubscriber.
    */
   data: Prisma.XOR<Prisma.WaitlistSubscriberCreateInput, Prisma.WaitlistSubscriberUncheckedCreateInput>
@@ -988,6 +1601,10 @@ export type WaitlistSubscriberCreateManyAndReturnArgs<ExtArgs extends runtime.Ty
    */
   data: Prisma.WaitlistSubscriberCreateManyInput | Prisma.WaitlistSubscriberCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WaitlistSubscriberIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1002,6 +1619,10 @@ export type WaitlistSubscriberUpdateArgs<ExtArgs extends runtime.Types.Extension
    * Omit specific fields from the WaitlistSubscriber
    */
   omit?: Prisma.WaitlistSubscriberOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WaitlistSubscriberInclude<ExtArgs> | null
   /**
    * The data needed to update a WaitlistSubscriber.
    */
@@ -1054,6 +1675,10 @@ export type WaitlistSubscriberUpdateManyAndReturnArgs<ExtArgs extends runtime.Ty
    * Limit how many WaitlistSubscribers to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WaitlistSubscriberIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1068,6 +1693,10 @@ export type WaitlistSubscriberUpsertArgs<ExtArgs extends runtime.Types.Extension
    * Omit specific fields from the WaitlistSubscriber
    */
   omit?: Prisma.WaitlistSubscriberOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WaitlistSubscriberInclude<ExtArgs> | null
   /**
    * The filter to search for the WaitlistSubscriber to update in case it exists.
    */
@@ -1095,6 +1724,10 @@ export type WaitlistSubscriberDeleteArgs<ExtArgs extends runtime.Types.Extension
    */
   omit?: Prisma.WaitlistSubscriberOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WaitlistSubscriberInclude<ExtArgs> | null
+  /**
    * Filter which WaitlistSubscriber to delete.
    */
   where: Prisma.WaitlistSubscriberWhereUniqueInput
@@ -1115,6 +1748,49 @@ export type WaitlistSubscriberDeleteManyArgs<ExtArgs extends runtime.Types.Exten
 }
 
 /**
+ * WaitlistSubscriber.referredBy
+ */
+export type WaitlistSubscriber$referredByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WaitlistSubscriber
+   */
+  select?: Prisma.WaitlistSubscriberSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WaitlistSubscriber
+   */
+  omit?: Prisma.WaitlistSubscriberOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WaitlistSubscriberInclude<ExtArgs> | null
+  where?: Prisma.WaitlistSubscriberWhereInput
+}
+
+/**
+ * WaitlistSubscriber.referrals
+ */
+export type WaitlistSubscriber$referralsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WaitlistSubscriber
+   */
+  select?: Prisma.WaitlistSubscriberSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WaitlistSubscriber
+   */
+  omit?: Prisma.WaitlistSubscriberOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WaitlistSubscriberInclude<ExtArgs> | null
+  where?: Prisma.WaitlistSubscriberWhereInput
+  orderBy?: Prisma.WaitlistSubscriberOrderByWithRelationInput | Prisma.WaitlistSubscriberOrderByWithRelationInput[]
+  cursor?: Prisma.WaitlistSubscriberWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WaitlistSubscriberScalarFieldEnum | Prisma.WaitlistSubscriberScalarFieldEnum[]
+}
+
+/**
  * WaitlistSubscriber without action
  */
 export type WaitlistSubscriberDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1126,4 +1802,8 @@ export type WaitlistSubscriberDefaultArgs<ExtArgs extends runtime.Types.Extensio
    * Omit specific fields from the WaitlistSubscriber
    */
   omit?: Prisma.WaitlistSubscriberOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WaitlistSubscriberInclude<ExtArgs> | null
 }

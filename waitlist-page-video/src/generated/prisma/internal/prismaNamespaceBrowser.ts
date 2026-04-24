@@ -73,6 +73,13 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 export const WaitlistSubscriberScalarFieldEnum = {
   id: 'id',
   email: 'email',
+  referralCode: 'referralCode',
+  referralsMade: 'referralsMade',
+  referredById: 'referredById',
+  isVerified: 'isVerified',
+  verifiedAt: 'verifiedAt',
+  otpCode: 'otpCode',
+  otpExpiresAt: 'otpExpiresAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -94,4 +101,12 @@ export const QueryMode = {
 } as const
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 

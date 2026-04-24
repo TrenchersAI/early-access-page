@@ -8,8 +8,19 @@ datasource db {
 }
 
 model WaitlistSubscriber {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String               @id @default(cuid())
+  email        String               @unique
+  referralCode String               @unique
+  referralsMade Int                 @default(0)
+  referredById String?
+  referredBy   WaitlistSubscriber?  @relation("WaitlistReferrals", fields: [referredById], references: [id])
+  referrals    WaitlistSubscriber[] @relation("WaitlistReferrals")
+  isVerified   Boolean              @default(false)
+  verifiedAt   DateTime?
+  otpCode      String?
+  otpExpiresAt DateTime?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([referredById])
 }
