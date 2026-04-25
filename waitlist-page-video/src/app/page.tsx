@@ -139,10 +139,12 @@ export default function Home() {
     "idle",
   );
   const prefersReducedMotion = useReducedMotion();
-  const containerVariants = prefersReducedMotion
-    ? reducedContainer
-    : contentContainer;
-  const fadeUpVariants = prefersReducedMotion ? reducedFadeUp : fadeUp;
+  /** Verified users have already seen the cinematic intro once — replaying
+     the staggered fade-up on every visit is friction. Treat the verified
+     state the same as prefers-reduced-motion: render content instantly. */
+  const skipMotion = isVerified || prefersReducedMotion;
+  const containerVariants = skipMotion ? reducedContainer : contentContainer;
+  const fadeUpVariants = skipMotion ? reducedFadeUp : fadeUp;
   const revealAppliedRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const otpInputRefs = useRef<Array<HTMLInputElement | null>>([]);
@@ -708,14 +710,14 @@ join the trenches → ${referralUrl}`;
               className="absolute inset-0 bg-black/70 backdrop-blur-xs"
               aria-hidden
               initial={
-                prefersReducedMotion
+                skipMotion
                   ? { opacity: 1, filter: "blur(0px)" }
                   : { opacity: 0, filter: "blur(14px)" }
               }
               animate={{ opacity: 1, filter: "blur(0px)" }}
               transition={{
-                duration: prefersReducedMotion ? 0 : 0.45,
-                delay: prefersReducedMotion ? 0 : 0.12,
+                duration: skipMotion ? 0 : 0.45,
+                delay: skipMotion ? 0 : 0.12,
                 ease: [0.22, 1, 0.36, 1],
               }}
             />
