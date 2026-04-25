@@ -642,6 +642,7 @@ join the trenches → ${referralUrl}`;
         poster="/falcon-poster.jpg"
         controls={false}
         disablePictureInPicture
+        disableRemotePlayback
         onLoadedMetadata={(e) => maybeRevealBeforeEnd(e.currentTarget)}
         onTimeUpdate={(e) => maybeRevealBeforeEnd(e.currentTarget)}
         aria-hidden
