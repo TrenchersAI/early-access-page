@@ -25,34 +25,37 @@ const REVEAL_BEFORE_END_SEC = 2;
    far slower than real time, so the time-based reveal hook never fires in a
    reasonable window. This cap guarantees the form appears even if playback
    stalls or autoplay is blocked entirely. */
-const MAX_REVEAL_DELAY_MS = 3500;
+const MAX_REVEAL_DELAY_MS = 2800;
 
 const contentContainer = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.14,
-      delayChildren: 1,
+      staggerChildren: 0.08,
+      delayChildren: 0.25,
     },
   },
 };
 
+/** `blur(200px)` interpolates to `blur(0px)` every frame during the animation,
+   and iOS Safari runs filter blur through Core Image — at large radii it drops
+   frames and the per-element animation drags well past its 0.5s budget,
+   leaving the form feeling "stuck" for seconds after reveal. A small radius
+   keeps the focus-in effect while staying cheap to composite. */
 const fadeUp = {
-  hidden: { opacity: 0, y: 22, filter: "blur(200px)" },
+  hidden: { opacity: 0, y: 22, filter: "blur(16px)" },
   visible: {
     opacity: 1,
     y: 0,
     filter: "blur(0px)",
     transition: {
-      duration: 0.5,
+      duration: 0.4,
       ease: [0.22, 1, 0.36, 1] as const,
     },
   },
 };
 
-/** No-motion equivalents for users with prefers-reduced-motion enabled.
-   `blur(200px)` is also expensive on low-end GPUs, so disabling it has a
-   meaningful perf payoff in addition to honoring the accessibility hint. */
+/** No-motion equivalents for users with prefers-reduced-motion enabled. */
 const reducedContainer = {
   hidden: {},
   visible: { transition: { staggerChildren: 0, delayChildren: 0 } },
