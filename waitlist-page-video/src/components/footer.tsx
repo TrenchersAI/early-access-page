@@ -3,9 +3,14 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 
-export default function Footer() {
+type FooterProps = {
+  isVerified?: boolean;
+};
+
+export default function Footer({ isVerified = false }: FooterProps) {
   const prefersReducedMotion = useReducedMotion();
-  const initial = prefersReducedMotion
+  const skipMotion = isVerified || prefersReducedMotion;
+  const initial = skipMotion
     ? false
     : { opacity: 0, y: 24, filter: "blur(14px)" };
 
@@ -17,8 +22,8 @@ export default function Footer() {
       initial={initial}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       transition={{
-        duration: prefersReducedMotion ? 0 : 0.55,
-        delay: prefersReducedMotion ? 0 : 0.72,
+        duration: skipMotion ? 0 : 0.55,
+        delay: skipMotion ? 0 : 0.72,
         ease: [0.22, 1, 0.36, 1] as const,
       }}
     >

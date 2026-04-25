@@ -120,7 +120,10 @@ export default function Home() {
   const [email, setEmail] = useState(initialVerifiedEmail);
   const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(""));
   const [otpStep, setOtpStep] = useState<"request" | "verify">("request");
-  const [isVerified, setIsVerified] = useState(false);
+  /** Optimistically trust localStorage on first render so entry animations
+     can be skipped synchronously for returning users. The API confirmation
+     in the useEffect below revokes this if the flag is stale. */
+  const [isVerified, setIsVerified] = useState(!!initialVerifiedEmail);
   const [copiedReferral, setCopiedReferral] = useState(false);
   const [referralCode, setReferralCode] = useState("");
   const [referralCount, setReferralCount] = useState(0);
@@ -139,10 +142,12 @@ export default function Home() {
     "idle",
   );
   const prefersReducedMotion = useReducedMotion();
-  const containerVariants = prefersReducedMotion
-    ? reducedContainer
-    : contentContainer;
-  const fadeUpVariants = prefersReducedMotion ? reducedFadeUp : fadeUp;
+  /** Verified users have already seen the cinematic intro once — replaying
+     the staggered fade-up on every visit is friction. Treat the verified
+     state the same as prefers-reduced-motion: render content instantly. */
+  const skipMotion = isVerified || prefersReducedMotion;
+  const containerVariants = skipMotion ? reducedContainer : contentContainer;
+  const fadeUpVariants = skipMotion ? reducedFadeUp : fadeUp;
   const revealAppliedRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const otpInputRefs = useRef<Array<HTMLInputElement | null>>([]);
@@ -235,6 +240,34 @@ export default function Home() {
     v.setAttribute("webkit-playsinline", "");
     v.playsInline = true;
 
+    /** Returning verified users (localStorage flag present) have already seen
+       the cinematic intro. Skip playback entirely and freeze the video on its
+       final frame so the post-signup UI renders against a static backdrop
+       instead of replaying the intro every visit. */
+    if (initialVerifiedEmail) {
+      if (!revealAppliedRef.current) {
+        revealAppliedRef.current = true;
+        setRevealUi(true);
+      }
+      const seekToEnd = () => {
+        const target = Math.max(0, (v.duration || 5) - 0.05);
+        try {
+          v.currentTime = target;
+        } catch {
+          // Some browsers throw if duration isn't known yet — the
+          // loadedmetadata listener will retry.
+        }
+        v.pause();
+      };
+      if (Number.isFinite(v.duration) && v.duration > 0) {
+        seekToEnd();
+      }
+      v.addEventListener("loadedmetadata", seekToEnd, { once: true });
+      return () => {
+        v.removeEventListener("loadedmetadata", seekToEnd);
+      };
+    }
+
     const tryPlay = () => {
       void requestVideoPlay();
     };
@@ -291,7 +324,7 @@ export default function Home() {
       document.removeEventListener("touchend", onFirstInteraction);
       document.removeEventListener("click", onFirstInteraction);
     };
-  }, [requestVideoPlay]);
+  }, [requestVideoPlay, initialVerifiedEmail]);
 
   const maybeRevealBeforeEnd = useCallback((video: HTMLVideoElement) => {
     if (revealAppliedRef.current) return;
@@ -522,6 +555,7 @@ export default function Home() {
         );
         if (!response.ok) {
           safeStorage.remove("trencher_verified_email");
+          if (!cancelled) setIsVerified(false);
           return;
         }
 
@@ -534,6 +568,7 @@ export default function Home() {
 
         if (!data.verified) {
           safeStorage.remove("trencher_verified_email");
+          setIsVerified(false);
           return;
         }
 
@@ -546,6 +581,7 @@ export default function Home() {
         }
       } catch {
         safeStorage.remove("trencher_verified_email");
+        if (!cancelled) setIsVerified(false);
       }
     };
 
@@ -635,7 +671,7 @@ join the trenches → ${referralUrl}`;
       <video
         ref={videoRef}
         className="bg-video"
-        autoPlay
+        autoPlay={!initialVerifiedEmail}
         muted
         playsInline
         preload="metadata"
@@ -665,7 +701,7 @@ join the trenches → ${referralUrl}`;
       )}
       {!revealUi && <div className="fixed inset-0 z-1 " aria-hidden />}
 
-      {revealUi && <Navbar />}
+      {revealUi && <Navbar isVerified={isVerified} />}
       <section
         id="join"
         className={`relative z-10 flex min-h-0 w-full flex-1 flex-col items-center overflow-hidden px-6 pb-12 text-center sm:pb-16 ${
@@ -680,14 +716,14 @@ join the trenches → ${referralUrl}`;
               className="absolute inset-0 bg-black/70 backdrop-blur-xs"
               aria-hidden
               initial={
-                prefersReducedMotion
+                skipMotion
                   ? { opacity: 1, filter: "blur(0px)" }
                   : { opacity: 0, filter: "blur(14px)" }
               }
               animate={{ opacity: 1, filter: "blur(0px)" }}
               transition={{
-                duration: prefersReducedMotion ? 0 : 0.45,
-                delay: prefersReducedMotion ? 0 : 0.12,
+                duration: skipMotion ? 0 : 0.45,
+                delay: skipMotion ? 0 : 0.12,
                 ease: [0.22, 1, 0.36, 1],
               }}
             />
@@ -981,7 +1017,7 @@ join the trenches → ${referralUrl}`;
           </>
         )}
       </section>
-      {revealUi && <Footer />}
+      {revealUi && <Footer isVerified={isVerified} />}
     </div>
   );
 }

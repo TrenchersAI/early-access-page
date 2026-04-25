@@ -4,11 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 
-export default function Navbar() {
+type NavbarProps = {
+  isVerified?: boolean;
+};
+
+export default function Navbar({ isVerified = false }: NavbarProps) {
   const prefersReducedMotion = useReducedMotion();
-  const initial = prefersReducedMotion
+  const skipMotion = isVerified || prefersReducedMotion;
+  const initial = skipMotion
     ? false
     : { opacity: 0, y: -20, filter: "blur(14px)" };
+  const statusLabel = isVerified ? "Sniped" : "Snipe It";
 
   return (
     <motion.header
@@ -18,8 +24,8 @@ export default function Navbar() {
       initial={initial}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       transition={{
-        duration: prefersReducedMotion ? 0 : 0.55,
-        delay: prefersReducedMotion ? 0 : 0.08,
+        duration: skipMotion ? 0 : 0.55,
+        delay: skipMotion ? 0 : 0.08,
         ease: [0.22, 1, 0.36, 1] as const,
       }}
     >
@@ -37,18 +43,10 @@ export default function Navbar() {
             priority
           />
         </Link>
-        <ul className="flex items-center gap-6 text-sm text-white/85">
-          <li>
-            <Link href="/" className="transition hover:text-white">
-              Invite code
-            </Link>
-          </li>
-          <li className="hidden sm:list-item">
-            <Link href="#join" className="transition hover:text-white">
-              Early access
-            </Link>
-          </li>
-        </ul>
+        <div className="flex shrink-0 items-center gap-5 text-sm text-white/85">
+          <span>Early access</span>
+          <span className="hidden sm:inline">{statusLabel}</span>
+        </div>
       </nav>
     </motion.header>
   );
