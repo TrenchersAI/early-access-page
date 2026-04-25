@@ -38,13 +38,9 @@ export default function Navbar() {
           />
         </Link>
         <span
-          className="inline-flex shrink-0 items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[10.5px] font-medium tracking-[0.18em] text-white/85 uppercase"
+          className="inline-flex shrink-0 items-center rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[10.5px] font-medium tracking-[0.18em] text-white/85 uppercase"
           aria-label="Status: early access"
         >
-          <span
-            aria-hidden
-            className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.55)]"
-          />
           Early Access
         </span>
       </nav>
