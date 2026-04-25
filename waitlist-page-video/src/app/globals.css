@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
-/* Avoid layout shift when scrollbar appears (full-width video + object-cover) */
+/* Avoid layout shift when scrollbar appears (full-width video + object-cover). */
 html {
   scrollbar-gutter: stable;
+}
+
+/* Older Safari (< 18.2) and Firefox (< 97) ignore `scrollbar-gutter`; force a
+   permanent scrollbar gutter so layout doesn't shift when the scrollbar appears. */
+@supports not (scrollbar-gutter: stable) {
+  html {
+    overflow-y: scroll;
+  }
 }
 
 :root {
@@ -25,19 +33,23 @@ html {
 }
 
 body {
+  /* `clip` is unsupported in Safari < 16; cascade lets it fall back to hidden */
+  overflow-x: hidden;
   overflow-x: clip;
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
-/* Fixed background video: stable compositing, centered crop */
+/* Fixed background video: stable compositing, centered crop.
+   `100dvh` cascades over `100vh` so older iOS (< 15.4) falls back to vh. */
 .bg-video {
   position: fixed;
   inset: 0;
   z-index: 0;
   width: 100%;
   height: 100%;
+  min-height: 100vh;
   min-height: 100dvh;
   object-fit: cover;
   object-position: center;
@@ -54,6 +66,13 @@ body {
     black 90%,
     transparent 100%
   );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
 }
 
 .feature-strip-track {
@@ -61,6 +80,16 @@ body {
   width: max-content;
   gap: 0.5rem;
   animation: feature-strip-scroll 16s linear infinite;
+}
+
+/* Margin fallback for Safari < 14.1 which ignores `gap` in flex containers */
+.feature-strip-track > * + * {
+  margin-left: 0.5rem;
+}
+@supports (gap: 1px) and (display: flex) {
+  .feature-strip-track > * + * {
+    margin-left: 0;
+  }
 }
 
 @keyframes feature-strip-scroll {
@@ -72,8 +101,40 @@ body {
   }
 }
 
+/* Boost background opacity on every blur surface when backdrop-filter is
+   unsupported (older Firefox, etc.) so text stays readable over the video.
+   `[class*="backdrop-blur"]` matches every Tailwind backdrop-blur utility. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  header.sticky,
+  footer.relative,
+  [class*="backdrop-blur"] {
+    background-color: rgba(0, 0, 0, 0.92) !important;
+  }
+}
+
+/* Suppress Chrome/Safari yellow autofill background so the white form
+   element does not flash yellow when an email is autofilled. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: #000;
+  -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.95) inset;
+  caret-color: #000;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .feature-strip-track {
     animation: none;
+  }
+  /* Disable any leftover CSS transitions/animations for users who prefer it */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }

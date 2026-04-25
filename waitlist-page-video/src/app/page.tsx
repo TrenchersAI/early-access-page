@@ -1,5 +1,4 @@
 "use client";
-// added for testing.
 import {
   type ClipboardEvent,
   type KeyboardEvent,
@@ -9,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import Footer from "../components/footer";
 import Navbar from "../components/navbar";
 import AiIcon from "../icons/ai-icon";
@@ -21,28 +20,50 @@ import XIcon from "../icons/x-icon";
 
 /** Show navbar, overlay, and footer this many seconds before playback ends */
 const REVEAL_BEFORE_END_SEC = 2;
+/** Wall-clock cap for revealing the UI. On slow mobile networks the MP4 (iOS
+   can't use the smaller WebM) buffers/stalls and `video.currentTime` advances
+   far slower than real time, so the time-based reveal hook never fires in a
+   reasonable window. This cap guarantees the form appears even if playback
+   stalls or autoplay is blocked entirely. */
+const MAX_REVEAL_DELAY_MS = 2800;
 
 const contentContainer = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.14,
-      delayChildren: 1,
+      staggerChildren: 0.08,
+      delayChildren: 0.25,
     },
   },
 };
 
+/** `blur(200px)` interpolates to `blur(0px)` every frame during the animation,
+   and iOS Safari runs filter blur through Core Image — at large radii it drops
+   frames and the per-element animation drags well past its 0.5s budget,
+   leaving the form feeling "stuck" for seconds after reveal. A small radius
+   keeps the focus-in effect while staying cheap to composite. */
 const fadeUp = {
-  hidden: { opacity: 0, y: 22, filter: "blur(200px)" },
+  hidden: { opacity: 0, y: 22, filter: "blur(16px)" },
   visible: {
     opacity: 1,
     y: 0,
     filter: "blur(0px)",
     transition: {
-      duration: 0.5,
+      duration: 0.4,
       ease: [0.22, 1, 0.36, 1] as const,
     },
   },
+};
+
+/** No-motion equivalents for users with prefers-reduced-motion enabled. */
+const reducedContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0, delayChildren: 0 } },
+};
+
+const reducedFadeUp = {
+  hidden: { opacity: 1, y: 0, filter: "blur(0px)" },
+  visible: { opacity: 1, y: 0, filter: "blur(0px)" },
 };
 
 const FEATURE_STRIP_ITEMS = [
@@ -54,9 +75,36 @@ const FEATURE_STRIP_ITEMS = [
 const LAUNCH_TWEET_URL =
   "https://x.com/iamatrencher/status/2047278343763153397";
 
+/** Safari Private Browsing throws on localStorage access — guard every call. */
+const safeStorage = {
+  get(key: string): string {
+    if (typeof window === "undefined") return "";
+    try {
+      return window.localStorage.getItem(key) ?? "";
+    } catch {
+      return "";
+    }
+  },
+  set(key: string, value: string): void {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(key, value);
+    } catch {
+      // private mode, quota exceeded, or storage disabled — drop silently
+    }
+  },
+  remove(key: string): void {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.removeItem(key);
+    } catch {
+      // ignore
+    }
+  },
+};
+
 function getStoredVerifiedEmail() {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem("trencher_verified_email") ?? "";
+  return safeStorage.get("trencher_verified_email");
 }
 
 function getReferralCodeFromUrl() {
@@ -87,6 +135,14 @@ export default function Home() {
     error: false,
   });
   const [resendCooldown, setResendCooldown] = useState<number>(0);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">(
+    "idle",
+  );
+  const prefersReducedMotion = useReducedMotion();
+  const containerVariants = prefersReducedMotion
+    ? reducedContainer
+    : contentContainer;
+  const fadeUpVariants = prefersReducedMotion ? reducedFadeUp : fadeUp;
   const revealAppliedRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const otpInputRefs = useRef<Array<HTMLInputElement | null>>([]);
@@ -202,6 +258,12 @@ export default function Home() {
     const fallbackT = window.setTimeout(() => {
       if (v.paused && !revealAppliedRef.current) setShowPlayFallback(true);
     }, 1200);
+    const revealCapT = window.setTimeout(() => {
+      if (revealAppliedRef.current) return;
+      revealAppliedRef.current = true;
+      setRevealUi(true);
+      setShowPlayFallback(false);
+    }, MAX_REVEAL_DELAY_MS);
 
     /** iOS can block autoplay until the first user gesture; one tap starts playback. */
     const onFirstInteraction = () => {
@@ -219,6 +281,7 @@ export default function Home() {
     return () => {
       window.clearTimeout(t);
       window.clearTimeout(fallbackT);
+      window.clearTimeout(revealCapT);
       v.removeEventListener("loadedmetadata", tryPlay);
       v.removeEventListener("loadeddata", tryPlay);
       v.removeEventListener("canplay", tryPlay);
@@ -325,7 +388,7 @@ export default function Home() {
           setOtpStep("request");
           setOtpDigits(Array(6).fill(""));
           if (normalizedEmail) {
-            localStorage.setItem("trencher_verified_email", normalizedEmail);
+            safeStorage.set("trencher_verified_email", normalizedEmail);
           }
         } else if (data.requiresOtp) {
           setOtpStep("verify");
@@ -339,7 +402,7 @@ export default function Home() {
           error: false,
         });
         if (normalizedEmail) {
-          localStorage.setItem("trencher_verified_email", normalizedEmail);
+          safeStorage.set("trencher_verified_email", normalizedEmail);
         }
       }
     } catch {
@@ -458,7 +521,7 @@ export default function Home() {
           `/api/waitlist?email=${encodeURIComponent(initialVerifiedEmail)}`,
         );
         if (!response.ok) {
-          localStorage.removeItem("trencher_verified_email");
+          safeStorage.remove("trencher_verified_email");
           return;
         }
 
@@ -470,7 +533,7 @@ export default function Home() {
         if (cancelled) return;
 
         if (!data.verified) {
-          localStorage.removeItem("trencher_verified_email");
+          safeStorage.remove("trencher_verified_email");
           return;
         }
 
@@ -482,7 +545,7 @@ export default function Home() {
           setReferralCount(data.referralCount);
         }
       } catch {
-        localStorage.removeItem("trencher_verified_email");
+        safeStorage.remove("trencher_verified_email");
       }
     };
 
@@ -525,12 +588,22 @@ export default function Home() {
   }, [isVerified, normalizedEmail]);
 
   const handleCopyReferral = async () => {
+    /** navigator.clipboard requires a secure context and is unavailable in
+       some embedded webviews. Surface a "Copy failed" state so users on
+       those browsers know to copy the visible URL manually. */
     try {
+      if (!navigator.clipboard?.writeText) throw new Error("no clipboard");
       await navigator.clipboard.writeText(referralUrl);
       setCopiedReferral(true);
-      window.setTimeout(() => setCopiedReferral(false), 1400);
+      setCopyState("copied");
+      window.setTimeout(() => {
+        setCopiedReferral(false);
+        setCopyState("idle");
+      }, 1400);
     } catch {
       setCopiedReferral(false);
+      setCopyState("failed");
+      window.setTimeout(() => setCopyState("idle"), 1800);
     }
   };
 
@@ -557,7 +630,7 @@ join the trenches → ${referralUrl}`;
   };
 
   return (
-    <div className="flex h-dvh w-full flex-1 flex-col overflow-hidden">
+    <div className="flex min-h-dvh w-full flex-1 flex-col sm:h-dvh sm:overflow-hidden">
       {/* Fixed layer: avoid flex/transform ancestors; object-center so crop stays stable */}
       <video
         ref={videoRef}
@@ -565,19 +638,23 @@ join the trenches → ${referralUrl}`;
         autoPlay
         muted
         playsInline
-        preload="auto"
+        preload="metadata"
+        poster="/falcon-poster.jpg"
         controls={false}
         disablePictureInPicture
         onLoadedMetadata={(e) => maybeRevealBeforeEnd(e.currentTarget)}
         onTimeUpdate={(e) => maybeRevealBeforeEnd(e.currentTarget)}
         aria-hidden
       >
+        {/* WebM listed first: Chrome/Firefox/Edge pick it for ~50% bandwidth
+            savings; iOS Safari falls through to the MP4. */}
+        <source src="/falcon-video-v3.webm" type="video/webm" />
         <source src="/falcon-video-v3.mp4" type="video/mp4" />
       </video>
       {!revealUi && showPlayFallback && (
         <button
           type="button"
-          className="fixed inset-x-0 bottom-20 z-20 mx-auto w-fit rounded-full border border-white/40 bg-black/60 px-5 py-2 text-sm font-semibold text-white backdrop-blur-md"
+          className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+5rem)] z-20 mx-auto w-fit rounded-full border border-white/40 bg-black/60 px-5 py-2 text-sm font-semibold text-white backdrop-blur-md"
           onClick={() => {
             void requestVideoPlay();
           }}
@@ -601,17 +678,21 @@ join the trenches → ${referralUrl}`;
             <motion.div
               className="absolute inset-0 bg-black/70 backdrop-blur-xs"
               aria-hidden
-              initial={{ opacity: 0, filter: "blur(14px)" }}
+              initial={
+                prefersReducedMotion
+                  ? { opacity: 1, filter: "blur(0px)" }
+                  : { opacity: 0, filter: "blur(14px)" }
+              }
               animate={{ opacity: 1, filter: "blur(0px)" }}
               transition={{
-                duration: 0.45,
-                delay: 0.12,
+                duration: prefersReducedMotion ? 0 : 0.45,
+                delay: prefersReducedMotion ? 0 : 0.12,
                 ease: [0.22, 1, 0.36, 1],
               }}
             />
             <motion.div
               className="relative z-10 flex w-full max-w-4xl flex-col items-center gap-6 px-3 sm:px-0"
-              variants={contentContainer}
+              variants={containerVariants}
               initial="hidden"
               animate="visible"
             >
@@ -619,19 +700,19 @@ join the trenches → ${referralUrl}`;
                 <>
                   <motion.p
                     className="text-sm font-medium uppercase tracking-[0.2em] text-white/80"
-                    variants={fadeUp}
+                    variants={fadeUpVariants}
                   >
                     Early access
                   </motion.p>
                   <motion.h1
                     className="w-full max-w-[17ch] text-center text-4xl leading-tight font-semibold tracking-wide text-white max-[420px]:max-w-[14ch] max-[420px]:text-[2rem] max-[420px]:leading-[1.06] max-[350px]:text-[1.7rem] max-[350px]:leading-[1.08] sm:max-w-none sm:text-5xl md:text-7xl"
-                    variants={fadeUp}
+                    variants={fadeUpVariants}
                   >
                     AI THAT TRADES BEFORE YOU CLICK
                   </motion.h1>
                 </>
               )}
-              <motion.div className="mt-2 w-full max-w-5xl" variants={fadeUp}>
+              <motion.div className="mt-2 w-full max-w-5xl" variants={fadeUpVariants}>
                 <div className="feature-strip-marquee sm:hidden">
                   <div className="feature-strip-track">
                     {[...FEATURE_STRIP_ITEMS, ...FEATURE_STRIP_ITEMS].map(
@@ -661,10 +742,10 @@ join the trenches → ${referralUrl}`;
               </motion.div>
               <motion.div
                 className="flex w-full max-w-2xl flex-col items-center gap-3 px-4 sm:px-0"
-                variants={fadeUp}
+                variants={fadeUpVariants}
               >
                 {isVerified ? (
-                  <div className="w-full max-w-[480px] rounded-[20px] border border-white/10 bg-gradient-to-br from-black/55 via-black/40 to-black/30 p-8 text-left text-[#fafafa] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-1px_0_rgba(255,255,255,0.06),0_24px_70px_rgba(0,0,0,0.58)] backdrop-blur-2xl [webkit-backdrop-filter:blur(36px)] max-[420px]:mx-0 max-[420px]:w-full max-[420px]:p-4">
+                  <div className="w-full max-w-[480px] rounded-[20px] border border-white/10 bg-gradient-to-br from-black/55 via-black/40 to-black/30 p-8 text-left text-[#fafafa] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-1px_0_rgba(255,255,255,0.06),0_24px_70px_rgba(0,0,0,0.58)] backdrop-blur-2xl [-webkit-backdrop-filter:blur(36px)] max-[420px]:mx-0 max-[420px]:w-full max-[420px]:p-4">
                     <div
                       className={`mb-4 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 ${foundingBadgeClass}`}
                     >
@@ -723,9 +804,20 @@ join the trenches → ${referralUrl}`;
                           onClick={() => {
                             void handleCopyReferral();
                           }}
-                          className="rounded-[8px] bg-[#1f1f1f] hover:bg-[#1f1f1f]/50 transition-all duration-200 px-[14px] py-[8px] text-[13.5px] font-medium text-[#fafafa] cursor-pointer"
+                          className="cursor-pointer rounded-[8px] bg-[#1f1f1f] px-[14px] py-[8px] text-[13.5px] font-medium text-[#fafafa] transition-all duration-200 hover:bg-[#1f1f1f]/50"
+                          aria-label={
+                            copyState === "failed"
+                              ? "Copy failed. Select the link manually."
+                              : copyState === "copied"
+                                ? "Referral link copied"
+                                : "Copy referral link"
+                          }
                         >
-                          {copiedReferral ? "Copied" : "Copy"}
+                          {copyState === "failed"
+                            ? "Copy failed"
+                            : copiedReferral
+                              ? "Copied"
+                              : "Copy"}
                         </button>
                       </div>
                     </div>
@@ -734,7 +826,7 @@ join the trenches → ${referralUrl}`;
                       <button
                         type="button"
                         onClick={handleShareOnX}
-                        className="hover:bg-neutral-900 duration-300 transition-all cursor-pointer inline-flex flex-1 items-center justify-center gap-2 rounded-[10px] border border-neutral-700 bg-black px-4 py-3 text-[14.5px] font-bold text-white [&_svg]:h-5 [&_svg]:w-5"
+                        className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-[10px] border border-neutral-700 bg-black px-4 py-3 text-[14.5px] font-bold text-white transition-all duration-300 hover:bg-neutral-900 [&_svg]:h-5 [&_svg]:w-5"
                       >
                         Share on
                         <XIcon />
@@ -742,7 +834,7 @@ join the trenches → ${referralUrl}`;
                       <button
                         type="button"
                         onClick={handleShareOnTelegram}
-                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-[10px] border border-[#229ED9] bg-[#229ED9] hover:bg-[#229ED9]/80 duration-300 transition-all cursor-pointer px-4 py-3 text-[14.5px] font-bold text-white"
+                        className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-[10px] border border-[#229ED9] bg-[#229ED9] px-4 py-3 text-[14.5px] font-bold text-white transition-all duration-300 hover:bg-[#229ED9]/80"
                       >
                         <TelegramIcon />
                         Telegram
@@ -760,13 +852,16 @@ join the trenches → ${referralUrl}`;
                       onSubmit={handleWaitlistSubmit}
                     >
                       {otpStep !== "verify" && (
-                        <div className="w-full flex justify-center">
+                        <div className="flex w-full justify-center">
                           <input
                             type="email"
                             value={email}
                             onChange={(event) => setEmail(event.target.value)}
                             placeholder="Please Enter Your Email ID"
-                            className="h-10 w-full min-w-0 rounded-full border-0 bg-white/95 px-3 text-[12px] text-black outline-none placeholder:text-neutral-800 sm:flex-1 sm:bg-transparent sm:px-4 sm:text-sm"
+                            autoComplete="email"
+                            inputMode="email"
+                            /* text-base (16px) on mobile prevents iOS Safari from zooming on focus */
+                            className="h-10 w-full min-w-0 rounded-full border-0 bg-white/95 px-4 text-center text-base text-black outline-none placeholder:text-neutral-800 sm:flex-1 sm:bg-transparent sm:px-4 sm:text-sm"
                             required
                           />
                         </div>
@@ -792,7 +887,9 @@ join the trenches → ${referralUrl}`;
                                 handleOtpKeyDown(index, event)
                               }
                               onPaste={handleOtpPaste}
-                              className="h-10 w-10 rounded-xl border border-white/30 bg-white/95 text-center text-sm font-semibold text-black outline-none focus:ring-2 focus:ring-white/60 sm:h-11 sm:w-11"
+                              autoComplete="one-time-code"
+                              /* text-base on mobile to avoid iOS focus zoom; tighter on desktop */
+                              className="h-10 w-10 rounded-xl border border-white/30 bg-white/95 text-center text-base font-semibold text-black outline-none focus:ring-2 focus:ring-white/60 sm:h-11 sm:w-11 sm:text-sm"
                               aria-label={`OTP digit ${index + 1}`}
                               required
                             />
@@ -804,7 +901,7 @@ join the trenches → ${referralUrl}`;
                           <div className="mt-1 flex w-full flex-col items-center gap-4">
                             <button
                               type="submit"
-                              className="not-even:cursor-pointer inline-flex h-10 w-full max-w-md items-center justify-center rounded-full bg-zinc-950 border px-8 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-70"
+                              className="enabled:cursor-pointer inline-flex h-10 w-full max-w-md items-center justify-center rounded-full border bg-zinc-950 px-8 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-70"
                               disabled={submitState.loading}
                             >
                               {submitState.loading
@@ -849,7 +946,7 @@ join the trenches → ${referralUrl}`;
                           <div className="flex w-full justify-end sm:w-auto">
                             <button
                               type="submit"
-                              className="not-even:cursor-pointer border border-white sm:border-none inline-flex h-10 w-full max-w-md shrink-0 whitespace-nowrap items-center justify-center rounded-full bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto sm:max-w-none sm:px-8"
+                              className="enabled:cursor-pointer inline-flex h-10 w-full max-w-md shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-white bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto sm:max-w-none sm:border-none sm:px-8"
                               disabled={submitState.loading}
                             >
                               {submitState.loading
