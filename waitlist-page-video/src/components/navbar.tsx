@@ -45,7 +45,7 @@ export default function Navbar({ isVerified = false }: NavbarProps) {
         </Link>
         <div className="flex shrink-0 items-center gap-5 text-sm text-white/85">
           <span>Early access</span>
-          <span>{statusLabel}</span>
+          <span className="hidden sm:inline">{statusLabel}</span>
         </div>
       </nav>
     </motion.header>
