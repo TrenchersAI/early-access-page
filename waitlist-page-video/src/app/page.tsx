@@ -107,9 +107,18 @@ function getStoredVerifiedEmail() {
   return safeStorage.get("trencher_verified_email");
 }
 
+/** Match the middleware's ref-code regex so legacy `?ref=` query links AND
+   the new `/CODE` path links both populate the referrer field. */
+const PATH_REF_CODE_PATTERN = /^[a-z0-9]{6,12}$/;
+
 function getReferralCodeFromUrl() {
   if (typeof window === "undefined") return "";
-  return new URLSearchParams(window.location.search).get("ref")?.trim() ?? "";
+  const fromQuery = new URLSearchParams(window.location.search)
+    .get("ref")
+    ?.trim();
+  if (fromQuery) return fromQuery;
+  const segment = window.location.pathname.slice(1).split("/")[0];
+  return PATH_REF_CODE_PATTERN.test(segment) ? segment : "";
 }
 
 export default function Home() {
@@ -158,7 +167,7 @@ export default function Home() {
       ? window.location.origin
       : "https://trenchers.xyz";
   const myReferralCode = referralCode || normalizedEmail;
-  const referralUrl = `${shareUrl}/?ref=${encodeURIComponent(myReferralCode)}`;
+  const referralUrl = `${shareUrl}/${encodeURIComponent(myReferralCode)}`;
   const tier: "Bronze" | "Silver" | "Gold" | "Diamond" =
     referralCount >= 50
       ? "Diamond"
