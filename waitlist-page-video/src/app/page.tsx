@@ -316,7 +316,7 @@ export default function Home() {
     if (otpStep === "verify" && !/^\d{6}$/.test(otp.trim())) {
       setSubmitState({
         loading: false,
-        message: "Please enter the 6-digit OTP.",
+        message: "Please enter the 6-digit code.",
         error: true,
       });
       return;
@@ -846,7 +846,7 @@ join the trenches → ${referralUrl}`;
                     <form
                       className={`flex w-full flex-col items-center gap-2 sm:w-auto sm:gap-2 sm:p-1.5 ${
                         otpStep === "verify"
-                          ? "max-w-md sm:max-w-xl sm:flex-wrap sm:rounded-3xl border-white/10 bg-gradient-to-br from-black/55 via-black/40 to-black/30 sm:p-5"
+                          ? "!w-fit max-w-full rounded-3xl border-white/10 bg-gradient-to-br from-black/55 via-black/40 to-black/30 px-4 py-4 shadow-[0_12px_30px_rgba(0,0,0,0.3)] sm:max-w-xl sm:flex-wrap sm:p-5 sm:shadow-none"
                           : "max-w-md sm:max-w-md sm:flex-row sm:overflow-hidden sm:rounded-full sm:bg-white/95 sm:p-1.5"
                       }`}
                       onSubmit={handleWaitlistSubmit}
@@ -868,7 +868,7 @@ join the trenches → ${referralUrl}`;
                       )}
 
                       {otpStep === "verify" && (
-                        <div className="mb-1 flex w-full flex-wrap items-center justify-center gap-2 sm:justify-center">
+                        <div className="mb-1 flex w-full flex-nowrap items-center justify-center gap-1 px-1 sm:gap-2 sm:px-0">
                           {Array.from({ length: 6 }).map((_, index) => (
                             <input
                               key={`otp-${index}`}
@@ -889,23 +889,27 @@ join the trenches → ${referralUrl}`;
                               onPaste={handleOtpPaste}
                               autoComplete="one-time-code"
                               /* text-base on mobile to avoid iOS focus zoom; tighter on desktop */
-                              className="h-10 w-10 rounded-xl border border-white/30 bg-white/95 text-center text-base font-semibold text-black outline-none focus:ring-2 focus:ring-white/60 sm:h-11 sm:w-11 sm:text-sm"
-                              aria-label={`OTP digit ${index + 1}`}
+                              className="h-8 w-8 rounded-xl border border-white/30 bg-white/95 text-center text-xs font-semibold text-black outline-none focus:ring-2 focus:ring-white/60 sm:h-11 sm:w-11 sm:text-sm"
+                              aria-label={`Code digit ${index + 1}`}
                               required
                             />
                           ))}
                         </div>
                       )}
-                      <div className="w-full sm:w-auto">
+                      <div
+                        className={
+                          otpStep === "verify" ? "w-auto" : "w-full sm:w-auto"
+                        }
+                      >
                         {otpStep === "verify" ? (
                           <div className="mt-1 flex w-full flex-col items-center gap-4">
                             <button
                               type="submit"
-                              className="enabled:cursor-pointer inline-flex h-10 w-full max-w-md items-center justify-center rounded-full border bg-zinc-950 px-8 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-70"
+                              className="enabled:cursor-pointer inline-flex h-10 w-[15rem] max-w-full items-center justify-center rounded-full border bg-zinc-950 px-5 text-[13px] font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-70 sm:w-full sm:max-w-md sm:px-8 sm:text-sm"
                               disabled={submitState.loading}
                             >
                               {submitState.loading
-                                ? "Verifying OTP..."
+                                ? "Verifying Code..."
                                 : "Verify & Join"}
                             </button>
                             <div className="mt-1 flex items-center justify-center gap-4 text-sm">
@@ -938,7 +942,7 @@ join the trenches → ${referralUrl}`;
                               >
                                 {resendCooldown > 0
                                   ? `Resend in ${resendCooldown}s`
-                                  : "Resend OTP"}
+                                  : "Resend Code"}
                               </button>
                             </div>
                           </div>
@@ -950,8 +954,8 @@ join the trenches → ${referralUrl}`;
                               disabled={submitState.loading}
                             >
                               {submitState.loading
-                                ? "Sending OTP..."
-                                : "Get OTP"}
+                                ? "Sending code..."
+                                : "Get Code"}
                             </button>
                           </div>
                         )}

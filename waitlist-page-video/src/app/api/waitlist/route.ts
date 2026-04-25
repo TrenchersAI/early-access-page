@@ -95,7 +95,7 @@ export async function POST(request: Request) {
     if (otp) {
       if (!OTP_REGEX.test(otp)) {
         return Response.json(
-          { message: "Enter a valid 6-digit OTP.", requiresOtp: true, verified: false },
+          { message: "Enter a valid 6-digit code.", requiresOtp: true, verified: false },
           { status: 400 },
         );
       }
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
         return Response.json(
           {
             message:
-              "No waitlist request found for this email. Request OTP first.",
+              "No waitlist request found for this email. Request a code first.",
             requiresOtp: false,
             verified: false,
           },
@@ -130,7 +130,7 @@ export async function POST(request: Request) {
       if (!existing.otpCode || expired || existing.otpCode !== otp) {
         return Response.json(
           {
-            message: "Invalid or expired OTP. Please request a new code.",
+            message: "Invalid or expired code. Please request a new one.",
             requiresOtp: true,
             verified: false,
           },
@@ -256,7 +256,7 @@ export async function POST(request: Request) {
       console.error("Failed to send waitlist OTP email:", error);
       return Response.json(
         {
-          message: "Unable to send OTP right now. Please try again.",
+          message: "Unable to send code right now. Please try again.",
           requiresOtp: false,
           verified: false,
         },
@@ -266,7 +266,7 @@ export async function POST(request: Request) {
 
     return Response.json(
       {
-        message: "OTP sent. Check your inbox and verify to join the waitlist.",
+        message: "Code sent. Check your inbox and verify to join the waitlist.",
         requiresOtp: true,
         verified: false,
         retryAfterSeconds: Math.ceil(OTP_RESEND_COOLDOWN_MS / 1000),
