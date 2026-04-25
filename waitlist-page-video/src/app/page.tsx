@@ -1011,7 +1011,7 @@ join the trenches → ${referralUrl}`;
           </>
         )}
       </section>
-      {revealUi && <Footer />}
+      {revealUi && <Footer isVerified={isVerified} />}
     </div>
   );
 }

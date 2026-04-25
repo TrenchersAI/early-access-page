@@ -10,7 +10,8 @@ type NavbarProps = {
 
 export default function Navbar({ isVerified = false }: NavbarProps) {
   const prefersReducedMotion = useReducedMotion();
-  const initial = prefersReducedMotion
+  const skipMotion = isVerified || prefersReducedMotion;
+  const initial = skipMotion
     ? false
     : { opacity: 0, y: -20, filter: "blur(14px)" };
   const statusLabel = isVerified ? "Sniped" : "Snipe It";
@@ -23,8 +24,8 @@ export default function Navbar({ isVerified = false }: NavbarProps) {
       initial={initial}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       transition={{
-        duration: prefersReducedMotion ? 0 : 0.55,
-        delay: prefersReducedMotion ? 0 : 0.08,
+        duration: skipMotion ? 0 : 0.55,
+        delay: skipMotion ? 0 : 0.08,
         ease: [0.22, 1, 0.36, 1] as const,
       }}
     >
