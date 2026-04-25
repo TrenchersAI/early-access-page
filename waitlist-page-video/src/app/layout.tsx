@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -16,6 +16,14 @@ export const metadata: Metadata = {
   title: "Trenchers AI — Copy Whales, Snipe Tokens, Trade Faster",
   description:
     "Snipe new launches, track onchain activity, and join the Trenchers AI waitlist for early access.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#000000",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({

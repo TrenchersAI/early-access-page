@@ -2,17 +2,24 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 
 export default function Navbar() {
+  const prefersReducedMotion = useReducedMotion();
+  const initial = prefersReducedMotion
+    ? false
+    : { opacity: 0, y: -20, filter: "blur(14px)" };
+
   return (
     <motion.header
-      className="sticky top-0 z-20 shrink-0 bg-black/70 backdrop-blur-xs"
-      initial={{ opacity: 0, y: -20, filter: "blur(14px)" }}
+      /* Safe-area top/left/right keep the navbar content clear of the iPhone
+         notch and rounded corners now that viewportFit:"cover" is set. */
+      className="sticky top-0 z-20 shrink-0 bg-black/70 backdrop-blur-xs pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]"
+      initial={initial}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       transition={{
-        duration: 0.55,
-        delay: 0.08,
+        duration: prefersReducedMotion ? 0 : 0.55,
+        delay: prefersReducedMotion ? 0 : 0.08,
         ease: [0.22, 1, 0.36, 1] as const,
       }}
     >

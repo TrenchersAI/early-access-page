@@ -1,17 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 
 export default function Footer() {
+  const prefersReducedMotion = useReducedMotion();
+  const initial = prefersReducedMotion
+    ? false
+    : { opacity: 0, y: 24, filter: "blur(14px)" };
+
   return (
     <motion.footer
-      className="relative z-20 shrink-0 bg-black/70 backdrop-blur-xs"
-      initial={{ opacity: 0, y: 24, filter: "blur(14px)" }}
+      /* Safe-area bottom/left/right keep the footer clear of the iPhone home
+         indicator and rounded corners with viewportFit:"cover". */
+      className="relative z-20 shrink-0 bg-black/70 backdrop-blur-xs pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]"
+      initial={initial}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       transition={{
-        duration: 0.55,
-        delay: 0.72,
+        duration: prefersReducedMotion ? 0 : 0.55,
+        delay: prefersReducedMotion ? 0 : 0.72,
         ease: [0.22, 1, 0.36, 1] as const,
       }}
     >
