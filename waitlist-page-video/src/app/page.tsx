@@ -73,7 +73,7 @@ const FEATURE_STRIP_ITEMS = [
   { label: "Copy Whales Trades", icon: <CopyIcon /> },
 ];
 const LAUNCH_TWEET_URL =
-  "https://x.com/iamatrencher/status/2048144096146161752";
+  "https://x.com/TrenchersAI/status/2048148307650998392";
 
 /** Safari Private Browsing throws on localStorage access — guard every call. */
 const safeStorage = {
