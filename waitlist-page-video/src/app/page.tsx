@@ -120,7 +120,10 @@ export default function Home() {
   const [email, setEmail] = useState(initialVerifiedEmail);
   const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(""));
   const [otpStep, setOtpStep] = useState<"request" | "verify">("request");
-  const [isVerified, setIsVerified] = useState(false);
+  /** Optimistically trust localStorage on first render so entry animations
+     can be skipped synchronously for returning users. The API confirmation
+     in the useEffect below revokes this if the flag is stale. */
+  const [isVerified, setIsVerified] = useState(!!initialVerifiedEmail);
   const [copiedReferral, setCopiedReferral] = useState(false);
   const [referralCode, setReferralCode] = useState("");
   const [referralCount, setReferralCount] = useState(0);
@@ -552,6 +555,7 @@ export default function Home() {
         );
         if (!response.ok) {
           safeStorage.remove("trencher_verified_email");
+          if (!cancelled) setIsVerified(false);
           return;
         }
 
@@ -564,6 +568,7 @@ export default function Home() {
 
         if (!data.verified) {
           safeStorage.remove("trencher_verified_email");
+          setIsVerified(false);
           return;
         }
 
@@ -576,6 +581,7 @@ export default function Home() {
         }
       } catch {
         safeStorage.remove("trencher_verified_email");
+        if (!cancelled) setIsVerified(false);
       }
     };
 
