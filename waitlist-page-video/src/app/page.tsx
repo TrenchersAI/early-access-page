@@ -644,11 +644,12 @@ export default function Home() {
   };
 
   const handleShareOnX = () => {
-    const tweetText = `just locked in early access to @trenchersai 🪖
+    const tweetText = `I'm officially a Trencher now 🔥
+just locked in early access to @TrenchersAI
 
-the next-gen onchain trading terminal — snipe faster, exit cleaner, trade safer.
-
-join the trenches → ${referralUrl}`;
+Let's run it up together!
+join the trenches → ${referralUrl}
+#TrenchersAI`;
 
     const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(LAUNCH_TWEET_URL)}`;
 
@@ -658,7 +659,11 @@ join the trenches → ${referralUrl}`;
   };
 
   const handleShareOnTelegram = () => {
-    const telegramText = `just locked in early access to @trenchersai 🪖 the next-gen onchain trading terminal. join the trenches:`;
+    const telegramText = `I'm officially a Trencher now 🔥
+just locked in early access to @TrenchersAI
+
+Let's run it up together!
+join the trenches:`;
     const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=${encodeURIComponent(telegramText)}`;
     window.open(shareUrl, "_blank", "noopener,noreferrer");
 
