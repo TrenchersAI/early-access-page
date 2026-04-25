@@ -643,9 +643,12 @@ join the trenches → ${referralUrl}`;
       {!revealUi && <div className="fixed inset-0 z-1 " aria-hidden />}
 
       {revealUi && <Navbar />}
+      {/* flex-auto (basis: auto) lets the section grow with content on mobile
+          so the page actually scrolls when the dashboard overflows; sm: restores
+          flex-1 + min-h-0 + overflow-hidden for the locked-viewport behavior. */}
       <section
         id="join"
-        className="relative z-10 flex min-h-0 w-full flex-1 flex-col items-center justify-center px-6 py-12 text-center sm:overflow-hidden sm:py-20"
+        className="relative z-10 flex w-full flex-auto flex-col items-center justify-center px-6 py-12 text-center sm:min-h-0 sm:flex-1 sm:overflow-hidden sm:py-20"
       >
         {revealUi && (
           <>
