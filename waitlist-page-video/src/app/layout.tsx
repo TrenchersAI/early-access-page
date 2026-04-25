@@ -33,19 +33,21 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Trenchers AI — AI trading terminal for Solana",
+        width: 1803,
+        height: 2025,
+        alt: "Trenchers AI — AI agents faster than your reflexes",
       },
     ],
   },
   twitter: {
+    /** Twitter prefers ~2:1; serve a dedicated 1200x630 crop while every
+       other platform (Discord, Telegram, iMessage) gets the full banner. */
     card: "summary_large_image",
     site: "@TrenchersAI",
     creator: "@TrenchersAI",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    images: ["/og-image.jpg"],
+    images: ["/og-twitter.jpg"],
   },
 };
 
