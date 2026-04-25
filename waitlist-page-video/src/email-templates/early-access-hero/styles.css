@@ -12,19 +12,14 @@ body {
 
 .email-shell {
   width: 100%;
-  min-height: 100vh;
-  padding: 24px 12px;
-  background: radial-gradient(circle at top, #101010 0%, #030303 62%);
+  padding: 0;
+  background: #050505;
 }
 
 .email-card {
   width: 100%;
-  max-width: 760px;
   border-collapse: collapse;
   background: #070707;
-  border: 1px solid #1a1a1a;
-  border-radius: 16px;
-  overflow: hidden;
 }
 
 .navbar {
@@ -39,9 +34,13 @@ body {
 
 .logo-img {
   display: inline-block;
-  width: 140px;
-  height: auto;
+  height: 44px;
+  width: auto;
   vertical-align: middle;
+  border: 0;
+  outline: none;
+  text-decoration: none;
+  -ms-interpolation-mode: bicubic;
 }
 
 .nav-cta {
@@ -77,6 +76,7 @@ h1 {
   letter-spacing: 0.02em;
   margin-left: auto;
   margin-right: auto;
+  color: #ffffff;
 }
 
 .subtitle {
@@ -159,7 +159,7 @@ li {
 
 @media (max-width: 640px) {
   .email-shell {
-    padding: 16px 8px;
+    padding: 0;
   }
 
   .navbar {
@@ -177,8 +177,10 @@ li {
   }
 
   .logo-img {
-    width: 140px;
-    height: auto;
+    height: 38px;
+    width: auto;
+    margin-left: auto !important;
+    margin-right: auto !important;
   }
 
   .nav-cta {

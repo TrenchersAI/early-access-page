@@ -4,54 +4,77 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>TrenchersAI OTP</title>
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
+    <title>TrenchersAI Verification Code</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body>
-    <table role="presentation" class="email-shell" cellpadding="0" cellspacing="0">
+  <body style="margin: 0; padding: 0; background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+    <table role="presentation" class="email-shell" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff" style="background-color: #ffffff; width: 100%;">
       <tr>
-        <td align="center">
-          <table role="presentation" class="email-card" cellpadding="0" cellspacing="0">
+        <td align="center" style="padding: 0;">
+          <table role="presentation" class="email-card" cellpadding="0" cellspacing="0" width="100%" bgcolor="#ffffff" style="background-color: #ffffff;">
             <tr>
-              <td class="navbar">
+              <td class="navbar" bgcolor="#000000" style="padding: 20px 28px; background-color: #000000;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                   <tr>
-                    <td class="brand-cell" align="left">
+                    <td class="brand-cell" align="left" style="white-space: nowrap; vertical-align: middle;">
                       <img
-                        src="/email-templates/early-access-hero/logo.svg"
-                        alt="Trenchers"
+                        src="cid:logo"
+                        alt="TrenchersAI"
                         class="logo-img"
+                        style="display: block; height: 48px; width: auto; border: 0; outline: none; text-decoration: none;"
                       />
                     </td>
-                    <td class="nav-text" align="right">OTP Verification</td>
+                    <td class="nav-text" align="right" style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #ffffff; vertical-align: middle;">
+                      Verification Code
+                    </td>
                   </tr>
                 </table>
               </td>
             </tr>
             <tr>
-              <td class="hero">
-                <h1>Your verification code</h1>
-                <p class="otp-label">Use this one-time code to continue:</p>
-                <div class="otp-code">482913</div>
-                <p class="otp-note">This code expires in 10 minutes.</p>
+              <td class="hero" align="center" style="padding: 52px 32px 44px;">
+                <h1 style="margin: 0; font-size: 24px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; color: #000000;">
+                  Your verification code
+                </h1>
+                <p class="otp-label" style="margin: 10px 0 0; font-size: 14px; line-height: 1.5; color: #6b7280;">
+                  Use this one-time code to continue.
+                </p>
+                <div class="otp-code-wrap" style="margin: 28px 0 0;">
+                  <div class="otp-code" style="display: inline-block; padding: 16px 28px; background-color: #000000; border-radius: 12px; font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; font-size: 30px; font-weight: 700; letter-spacing: 0.28em; color: #ffffff;">
+                    {{OTP_CODE}}
+                  </div>
+                </div>
+                <p class="otp-note" style="margin: 22px 0 0; font-size: 12px; color: #94a3b8;">
+                  This code expires in 10 minutes.
+                </p>
               </td>
             </tr>
             <tr>
-              <td class="footer">
+              <td class="footer" style="padding: 18px 28px 20px; border-top: 1px solid #eef0f3; background-color: #fafbfc;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                   <tr>
-                    <td class="footer-left" align="left">© 2026 TrenchersAI. All rights reserved.</td>
-                    <td class="footer-right" align="right">
-                      <a href="/terms" class="footer-link">Terms</a>&nbsp;&nbsp;&nbsp;
-                      <a href="/privacy" class="footer-link">Privacy</a>&nbsp;&nbsp;&nbsp;
-                      <a href="https://x.com/TrenchersAI" class="footer-link">X</a>&nbsp;&nbsp;&nbsp;
-                      <a href="https://www.linkedin.com/company/trenchersai/" class="footer-link">LinkedIn</a>
+                    <td class="footer-left" align="left" style="font-size: 12px; color: #6b7280; white-space: nowrap;">
+                      © 2026 TrenchersAI
+                    </td>
+                    <td class="footer-right" align="right" style="font-size: 12px; white-space: nowrap;">
+                      <a href="/terms" class="footer-link" style="color: #374151; text-decoration: none;">Terms</a>
+                      &nbsp;·&nbsp;
+                      <a href="/privacy" class="footer-link" style="color: #374151; text-decoration: none;">Privacy</a>
+                      &nbsp;·&nbsp;
+                      <a href="https://x.com/TrenchersAI" class="footer-link" style="color: #374151; text-decoration: none;">X</a>
+                      &nbsp;·&nbsp;
+                      <a href="https://www.linkedin.com/company/trenchersai/" class="footer-link" style="color: #374151; text-decoration: none;">LinkedIn</a>
                     </td>
                   </tr>
                 </table>
               </td>
             </tr>
           </table>
+          <p class="disclaimer" style="margin: 18px 0 0; font-size: 12px; line-height: 1.5; color: #9ca3af; text-align: center; max-width: 520px;">
+            If you didn't request this code, you can safely ignore this email.
+          </p>
         </td>
       </tr>
     </table>
