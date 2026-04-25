@@ -4,11 +4,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 
-export default function Navbar() {
+type NavbarProps = {
+  isVerified?: boolean;
+};
+
+export default function Navbar({ isVerified = false }: NavbarProps) {
   const prefersReducedMotion = useReducedMotion();
   const initial = prefersReducedMotion
     ? false
     : { opacity: 0, y: -20, filter: "blur(14px)" };
+  const statusLabel = isVerified ? "Sniped" : "Snipe It";
 
   return (
     <motion.header
@@ -37,18 +42,12 @@ export default function Navbar() {
             priority
           />
         </Link>
-        <ul className="flex items-center gap-6 text-sm text-white/85">
-          <li>
-            <Link href="/" className="transition hover:text-white">
-              Invite code
-            </Link>
-          </li>
-          <li className="hidden sm:list-item">
-            <Link href="#join" className="transition hover:text-white">
-              Early access
-            </Link>
-          </li>
-        </ul>
+        <span
+          className="inline-flex shrink-0 items-center rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[10.5px] font-medium tracking-[0.18em] text-white/85 uppercase"
+          aria-label={`Status: ${statusLabel.toLowerCase()}`}
+        >
+          {statusLabel}
+        </span>
       </nav>
     </motion.header>
   );

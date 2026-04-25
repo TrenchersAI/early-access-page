@@ -693,7 +693,7 @@ join the trenches → ${referralUrl}`;
       )}
       {!revealUi && <div className="fixed inset-0 z-1 " aria-hidden />}
 
-      {revealUi && <Navbar />}
+      {revealUi && <Navbar isVerified={isVerified} />}
       <section
         id="join"
         className={`relative z-10 flex min-h-0 w-full flex-1 flex-col items-center overflow-hidden px-6 pb-12 text-center sm:pb-16 ${
