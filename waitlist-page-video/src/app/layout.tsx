@@ -12,10 +12,41 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = "https://www.trenchers.ai";
+const SITE_TITLE = "Trenchers AI — Copy Whales, Snipe Tokens, Trade Faster";
+const SITE_DESCRIPTION =
+  "Snipe new launches, track onchain activity, and join the Trenchers AI waitlist for early access.";
+
 export const metadata: Metadata = {
-  title: "Trenchers AI — Copy Whales, Snipe Tokens, Trade Faster",
-  description:
-    "Snipe new launches, track onchain activity, and join the Trenchers AI waitlist for early access.",
+  /** Resolves relative image paths in Open Graph / Twitter metadata to
+     absolute URLs — required for social-platform crawlers. */
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: SITE_URL,
+    siteName: "Trenchers AI",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Trenchers AI — AI trading terminal for Solana",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@TrenchersAI",
+    creator: "@TrenchersAI",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/og-image.jpg"],
+  },
 };
 
 export const viewport: Viewport = {
