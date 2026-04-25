@@ -605,18 +605,22 @@ join the trenches → ${referralUrl}`;
               initial="hidden"
               animate="visible"
             >
-              <motion.p
-                className="text-sm font-medium uppercase tracking-[0.2em] text-white/80"
-                variants={fadeUp}
-              >
-                Early access
-              </motion.p>
-              <motion.h1
-                className="w-full max-w-[12ch] text-center text-4xl leading-tight font-semibold tracking-wide text-white sm:max-w-none sm:text-5xl md:text-7xl"
-                variants={fadeUp}
-              >
-                AI THAT TRADES BEFORE YOU CLICK
-              </motion.h1>
+              {!isVerified && (
+                <>
+                  <motion.p
+                    className="text-sm font-medium uppercase tracking-[0.2em] text-white/80"
+                    variants={fadeUp}
+                  >
+                    Early access
+                  </motion.p>
+                  <motion.h1
+                    className="w-full max-w-[12ch] text-center text-4xl leading-tight font-semibold tracking-wide text-white sm:max-w-none sm:text-5xl md:text-7xl"
+                    variants={fadeUp}
+                  >
+                    AI THAT TRADES BEFORE YOU CLICK
+                  </motion.h1>
+                </>
+              )}
               <motion.div className="mt-2 w-full max-w-5xl" variants={fadeUp}>
                 <div className="feature-strip-marquee sm:hidden">
                   <div className="feature-strip-track">
