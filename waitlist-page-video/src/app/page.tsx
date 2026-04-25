@@ -235,6 +235,34 @@ export default function Home() {
     v.setAttribute("webkit-playsinline", "");
     v.playsInline = true;
 
+    /** Returning verified users (localStorage flag present) have already seen
+       the cinematic intro. Skip playback entirely and freeze the video on its
+       final frame so the post-signup UI renders against a static backdrop
+       instead of replaying the intro every visit. */
+    if (initialVerifiedEmail) {
+      if (!revealAppliedRef.current) {
+        revealAppliedRef.current = true;
+        setRevealUi(true);
+      }
+      const seekToEnd = () => {
+        const target = Math.max(0, (v.duration || 5) - 0.05);
+        try {
+          v.currentTime = target;
+        } catch {
+          // Some browsers throw if duration isn't known yet — the
+          // loadedmetadata listener will retry.
+        }
+        v.pause();
+      };
+      if (Number.isFinite(v.duration) && v.duration > 0) {
+        seekToEnd();
+      }
+      v.addEventListener("loadedmetadata", seekToEnd, { once: true });
+      return () => {
+        v.removeEventListener("loadedmetadata", seekToEnd);
+      };
+    }
+
     const tryPlay = () => {
       void requestVideoPlay();
     };
@@ -291,7 +319,7 @@ export default function Home() {
       document.removeEventListener("touchend", onFirstInteraction);
       document.removeEventListener("click", onFirstInteraction);
     };
-  }, [requestVideoPlay]);
+  }, [requestVideoPlay, initialVerifiedEmail]);
 
   const maybeRevealBeforeEnd = useCallback((video: HTMLVideoElement) => {
     if (revealAppliedRef.current) return;
@@ -635,7 +663,7 @@ join the trenches → ${referralUrl}`;
       <video
         ref={videoRef}
         className="bg-video"
-        autoPlay
+        autoPlay={!initialVerifiedEmail}
         muted
         playsInline
         preload="metadata"
