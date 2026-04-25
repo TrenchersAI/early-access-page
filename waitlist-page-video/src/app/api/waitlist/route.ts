@@ -15,6 +15,7 @@ type WaitlistBody = {
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const OTP_REGEX = /^\d{6}$/;
 const OTP_EXPIRY_MS = 10 * 60 * 1000;
+const OTP_RESEND_COOLDOWN_MS = 60 * 1000;
 
 function generateOtpCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -195,6 +196,30 @@ export async function POST(request: Request) {
       );
     }
 
+    if (existing?.otpExpiresAt) {
+      const issuedAtMs =
+        existing.otpExpiresAt.getTime() - OTP_EXPIRY_MS;
+      const cooldownEndsAtMs = issuedAtMs + OTP_RESEND_COOLDOWN_MS;
+      const now = Date.now();
+      if (now < cooldownEndsAtMs) {
+        const retryAfterSeconds = Math.ceil(
+          (cooldownEndsAtMs - now) / 1000,
+        );
+        return Response.json(
+          {
+            message: `Please wait ${retryAfterSeconds}s before requesting a new code.`,
+            requiresOtp: true,
+            verified: false,
+            retryAfterSeconds,
+          },
+          {
+            status: 429,
+            headers: { "Retry-After": retryAfterSeconds.toString() },
+          },
+        );
+      }
+    }
+
     const otpCode = generateOtpCode();
     const otpExpiresAt = new Date(Date.now() + OTP_EXPIRY_MS);
     if (existing) {
@@ -244,6 +269,7 @@ export async function POST(request: Request) {
         message: "OTP sent. Check your inbox and verify to join the waitlist.",
         requiresOtp: true,
         verified: false,
+        retryAfterSeconds: Math.ceil(OTP_RESEND_COOLDOWN_MS / 1000),
       },
       { status: 200 },
     );

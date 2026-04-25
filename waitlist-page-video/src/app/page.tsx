@@ -86,6 +86,7 @@ export default function Home() {
     message: "",
     error: false,
   });
+  const [resendCooldown, setResendCooldown] = useState<number>(0);
   const revealAppliedRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const otpInputRefs = useRef<Array<HTMLInputElement | null>>([]);
@@ -280,16 +281,30 @@ export default function Home() {
         verified?: boolean;
         referralCode?: string;
         referralCount?: number;
+        retryAfterSeconds?: number;
       };
       const message = data.message ?? "Request completed.";
 
       if (!response.ok) {
+        if (
+          response.status === 429 &&
+          typeof data.retryAfterSeconds === "number"
+        ) {
+          setResendCooldown(data.retryAfterSeconds);
+          if (data.requiresOtp) {
+            setOtpStep("verify");
+          }
+        }
         setSubmitState({
           loading: false,
           message,
           error: true,
         });
         return;
+      }
+
+      if (typeof data.retryAfterSeconds === "number") {
+        setResendCooldown(data.retryAfterSeconds);
       }
 
       setSubmitState({
@@ -375,6 +390,49 @@ export default function Home() {
     const focusIndex = Math.min(pasted.length, 6) - 1;
     if (focusIndex >= 0) {
       otpInputRefs.current[focusIndex]?.focus();
+    }
+  };
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const interval = setInterval(() => {
+      setResendCooldown((s) => (s <= 1 ? 0 : s - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [resendCooldown]);
+
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0 || submitState.loading) return;
+    setSubmitState({ loading: true, message: "", error: false });
+    try {
+      const response = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          ...(incomingRefCode ? { ref: incomingRefCode } : {}),
+        }),
+      });
+      const data = (await response.json()) as {
+        message?: string;
+        retryAfterSeconds?: number;
+      };
+      if (typeof data.retryAfterSeconds === "number") {
+        setResendCooldown(data.retryAfterSeconds);
+      }
+      setSubmitState({
+        loading: false,
+        message:
+          data.message ??
+          (response.ok ? "New code sent. Check your inbox." : "Couldn't resend."),
+        error: !response.ok,
+      });
+    } catch {
+      setSubmitState({
+        loading: false,
+        message: "Unable to resend right now.",
+        error: true,
+      });
     }
   };
 
@@ -557,7 +615,7 @@ join the trenches → ${referralUrl}`;
                 className="w-full max-w-[12ch] text-center text-4xl leading-tight font-semibold tracking-wide text-white sm:max-w-none sm:text-5xl md:text-7xl"
                 variants={fadeUp}
               >
-                The Next-Gen Onchain Trading Experience
+                AI THAT TRADES BEFORE YOU CLICK
               </motion.h1>
               <motion.div className="mt-2 w-full max-w-5xl" variants={fadeUp}>
                 <div className="feature-strip-marquee sm:hidden">
@@ -641,7 +699,7 @@ join the trenches → ${referralUrl}`;
 
                     <div className="mt-4 rounded-[10px] border border-white bg-white/[0.03] py-[5px] pr-[5px] pl-[14px]">
                       <div className="flex items-center gap-3 rounded-[8px] px-2 py-1">
-                        <p className="min-w-0 flex-1 truncate font-mono text-[13px] text-[#fafafa]">
+                        <p className="min-w-0 flex-1 truncate font-medium text-[13px] text-[#fafafa]">
                           {referralUrl}
                         </p>
                         <button
@@ -743,6 +801,20 @@ join the trenches → ${referralUrl}`;
                           disabled={submitState.loading}
                         >
                           Change Email
+                        </button>
+                      )}
+                      {otpStep === "verify" && (
+                        <button
+                          type="button"
+                          className="cursor-pointer inline-flex h-10 w-full shrink-0 whitespace-nowrap items-center justify-center rounded-full border border-white bg-transparent px-3 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-6 sm:text-black sm:border-black"
+                          onClick={handleResendOtp}
+                          disabled={
+                            submitState.loading || resendCooldown > 0
+                          }
+                        >
+                          {resendCooldown > 0
+                            ? `Resend in ${resendCooldown}s`
+                            : "Resend OTP"}
                         </button>
                       )}
                       <button
