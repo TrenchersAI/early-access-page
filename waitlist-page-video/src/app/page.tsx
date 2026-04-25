@@ -992,7 +992,7 @@ join the trenches → ${referralUrl}`;
                             >
                               {submitState.loading
                                 ? "Sending code..."
-                                : "Get Code"}
+                                : "Join Now"}
                             </button>
                           </div>
                         )}
