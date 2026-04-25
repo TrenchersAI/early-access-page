@@ -20,6 +20,12 @@ import XIcon from "../icons/x-icon";
 
 /** Show navbar, overlay, and footer this many seconds before playback ends */
 const REVEAL_BEFORE_END_SEC = 2;
+/** Wall-clock cap for revealing the UI. On slow mobile networks the MP4 (iOS
+   can't use the smaller WebM) buffers/stalls and `video.currentTime` advances
+   far slower than real time, so the time-based reveal hook never fires in a
+   reasonable window. This cap guarantees the form appears even if playback
+   stalls or autoplay is blocked entirely. */
+const MAX_REVEAL_DELAY_MS = 3500;
 
 const contentContainer = {
   hidden: {},
@@ -248,6 +254,12 @@ export default function Home() {
     const fallbackT = window.setTimeout(() => {
       if (v.paused && !revealAppliedRef.current) setShowPlayFallback(true);
     }, 1200);
+    const revealCapT = window.setTimeout(() => {
+      if (revealAppliedRef.current) return;
+      revealAppliedRef.current = true;
+      setRevealUi(true);
+      setShowPlayFallback(false);
+    }, MAX_REVEAL_DELAY_MS);
 
     /** iOS can block autoplay until the first user gesture; one tap starts playback. */
     const onFirstInteraction = () => {
@@ -265,6 +277,7 @@ export default function Home() {
     return () => {
       window.clearTimeout(t);
       window.clearTimeout(fallbackT);
+      window.clearTimeout(revealCapT);
       v.removeEventListener("loadedmetadata", tryPlay);
       v.removeEventListener("loadeddata", tryPlay);
       v.removeEventListener("canplay", tryPlay);
