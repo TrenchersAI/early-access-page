@@ -37,18 +37,16 @@ export default function Navbar() {
             priority
           />
         </Link>
-        <ul className="flex items-center gap-6 text-sm text-white/85">
-          <li>
-            <Link href="/" className="transition hover:text-white">
-              Invite code
-            </Link>
-          </li>
-          <li className="hidden sm:list-item">
-            <Link href="#join" className="transition hover:text-white">
-              Early access
-            </Link>
-          </li>
-        </ul>
+        <span
+          className="inline-flex shrink-0 items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[10.5px] font-medium tracking-[0.18em] text-white/85 uppercase"
+          aria-label="Status: early access"
+        >
+          <span
+            aria-hidden
+            className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.55)]"
+          />
+          Early Access
+        </span>
       </nav>
     </motion.header>
   );
