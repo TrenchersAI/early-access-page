@@ -166,6 +166,11 @@ export default function Home() {
   const [copiedReferral, setCopiedReferral] = useState(false);
   const [referralCode, setReferralCode] = useState("");
   const [referralCount, setReferralCount] = useState(0);
+  /** Returning users (localStorage flag) optimistically render `isVerified` as
+     true, but their `referralCode`/`referralCount` are still defaults (`""`,
+     `0`) until the dashboard API responds — which causes a visible "0 → real
+     number" flash. Block the card render until the first fetch resolves. */
+  const [dashboardReady, setDashboardReady] = useState(!initialVerifiedEmail);
   const [incomingRefCode] = useState(initialRefCode);
   const [submitState, setSubmitState] = useState<{
     loading: boolean;
@@ -630,6 +635,8 @@ export default function Home() {
       } catch {
         safeStorage.remove("trencher_verified_email");
         if (!cancelled) setIsVerified(false);
+      } finally {
+        if (!cancelled) setDashboardReady(true);
       }
     };
 
@@ -835,6 +842,25 @@ join the trenches:`;
                 variants={fadeUpVariants}
               >
                 {isVerified ? (
+                  !dashboardReady ? (
+                    <div
+                      className="w-full max-w-[480px] rounded-[20px] border border-white/10 bg-gradient-to-br from-black/55 via-black/40 to-black/30 p-8 text-left text-[#fafafa] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-1px_0_rgba(255,255,255,0.06),0_24px_70px_rgba(0,0,0,0.58)] backdrop-blur-2xl [-webkit-backdrop-filter:blur(36px)] max-[420px]:mx-0 max-[420px]:w-full max-[420px]:p-4"
+                      role="status"
+                      aria-live="polite"
+                      aria-label="Loading your trencher dashboard"
+                    >
+                      <div className="flex flex-col items-center justify-center gap-5 py-10">
+                        <div className="relative h-12 w-12">
+                          <div className="absolute inset-0 rounded-full border-2 border-white/10" />
+                          <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-white/85 border-r-white/40" />
+                          <div className="absolute inset-2 rounded-full bg-white/5 blur-md" />
+                        </div>
+                        <p className="text-[10.5px] font-medium tracking-[0.2em] text-white/60 uppercase">
+                          Loading your trench
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
                   <div className="w-full max-w-[480px] rounded-[20px] border border-white/10 bg-gradient-to-br from-black/55 via-black/40 to-black/30 p-8 text-left text-[#fafafa] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-1px_0_rgba(255,255,255,0.06),0_24px_70px_rgba(0,0,0,0.58)] backdrop-blur-2xl [-webkit-backdrop-filter:blur(36px)] max-[420px]:mx-0 max-[420px]:w-full max-[420px]:p-4">
                     <div
                       className={`mb-4 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 ${foundingBadgeClass}`}
@@ -931,6 +957,7 @@ join the trenches:`;
                       </button>
                     </div>
                   </div>
+                  )
                 ) : (
                   <>
                     <form
