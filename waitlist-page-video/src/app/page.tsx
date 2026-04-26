@@ -107,6 +107,36 @@ function getStoredVerifiedEmail() {
   return safeStorage.get("trencher_verified_email");
 }
 
+/** X (Twitter) Pixel `twq()` is injected by the base script in layout.tsx.
+   Declaring it on `Window` lets us call it without an `any` cast. */
+declare global {
+  interface Window {
+    twq?: (
+      method: string,
+      eventId: string,
+      params?: Record<string, unknown>,
+    ) => void;
+  }
+}
+
+/** Fire the X Pixel signup conversion event. Safe to call when the env vars
+   aren't set (preview builds, local dev) or when the pixel script hasn't
+   loaded yet — the call is no-op'd. */
+function trackXPixelSignup(conversionId: string, email: string) {
+  if (typeof window === "undefined") return;
+  const eventId = process.env.NEXT_PUBLIC_X_PIXEL_SIGNUP_EVENT_ID;
+  if (!eventId) return;
+  if (!window.twq) return;
+  try {
+    window.twq("event", eventId, {
+      conversion_id: conversionId,
+      email_address: email,
+    });
+  } catch {
+    // Pixel calls must never break the signup flow.
+  }
+}
+
 /** Match the middleware's ref-code regex so legacy `?ref=` query links AND
    the new `/CODE` path links both populate the referrer field. */
 const PATH_REF_CODE_PATTERN = /^[a-z0-9]{6,12}$/;
@@ -446,6 +476,15 @@ export default function Home() {
         if (normalizedEmail) {
           safeStorage.set("trencher_verified_email", normalizedEmail);
         }
+        /** Ad-conversion event for X (Twitter) ads campaigns. Fires only on
+           a fresh signup (OTP verification success), not when an already-
+           verified user re-checks their email — that's the `otpStep ===
+           "request" && data.verified` branch above, which is just a re-auth
+           and shouldn't be counted as a conversion. */
+        trackXPixelSignup(
+          data.referralCode ?? normalizedEmail,
+          normalizedEmail,
+        );
       }
     } catch {
       setSubmitState({
