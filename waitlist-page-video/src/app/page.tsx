@@ -20,12 +20,16 @@ import XIcon from "../icons/x-icon";
 
 /** Show navbar, overlay, and footer this many seconds before playback ends */
 const REVEAL_BEFORE_END_SEC = 2;
-/** Wall-clock cap for revealing the UI. On slow mobile networks the MP4 (iOS
-   can't use the smaller WebM) buffers/stalls and `video.currentTime` advances
-   far slower than real time, so the time-based reveal hook never fires in a
-   reasonable window. This cap guarantees the form appears even if playback
-   stalls or autoplay is blocked entirely. */
+/** Wall-clock cap for revealing the UI when playback has *started* but the
+   `currentTime`-based reveal hook hasn't fired in time (slow network, MP4
+   stall on iOS, etc.). Only consulted once `video.currentTime > 0`. */
 const MAX_REVEAL_DELAY_MS = 2800;
+/** Final safety net for the autoplay-blocked case. iOS in-app browsers
+   (X/Twitter, Instagram, Facebook, LinkedIn, Discord) reject `play()` until
+   the user taps. We surface a centred "Tap to play" overlay immediately, but
+   if they never tap, reveal the form anyway after this long so they aren't
+   trapped on a frozen poster. */
+const AUTOPLAY_BLOCKED_REVEAL_MS = 10_000;
 
 const contentContainer = {
   hidden: {},
@@ -233,7 +237,10 @@ export default function Home() {
       setShowPlayFallback(false);
       return true;
     } catch {
-      if (v.paused) setShowPlayFallback(true);
+      /** play() rejects in iOS in-app browsers (X, Instagram, FB, LinkedIn
+         etc.) until the user gestures, even with muted+playsinline. Surface
+         the overlay immediately so they can tap to opt in. */
+      setShowPlayFallback(true);
       return false;
     }
   }, []);
@@ -297,15 +304,23 @@ export default function Home() {
     v.addEventListener("pause", onPause);
 
     const t = window.setTimeout(tryPlay, 100);
-    const fallbackT = window.setTimeout(() => {
-      if (v.paused && !revealAppliedRef.current) setShowPlayFallback(true);
-    }, 1200);
+    /** Stall safety: only force-reveal once playback has actually started.
+       If `currentTime` is still 0 we're in the autoplay-blocked case
+       (e.g. iOS in-app browser) — keep the play overlay up so the user can
+       opt in, and let `autoplaySafetyT` below handle the final timeout. */
     const revealCapT = window.setTimeout(() => {
+      if (revealAppliedRef.current) return;
+      if (v.currentTime > 0) {
+        revealAppliedRef.current = true;
+        setRevealUi(true);
+        setShowPlayFallback(false);
+      }
+    }, MAX_REVEAL_DELAY_MS);
+    const autoplaySafetyT = window.setTimeout(() => {
       if (revealAppliedRef.current) return;
       revealAppliedRef.current = true;
       setRevealUi(true);
-      setShowPlayFallback(false);
-    }, MAX_REVEAL_DELAY_MS);
+    }, AUTOPLAY_BLOCKED_REVEAL_MS);
 
     /** iOS can block autoplay until the first user gesture; one tap starts playback. */
     const onFirstInteraction = () => {
@@ -322,8 +337,8 @@ export default function Home() {
 
     return () => {
       window.clearTimeout(t);
-      window.clearTimeout(fallbackT);
       window.clearTimeout(revealCapT);
+      window.clearTimeout(autoplaySafetyT);
       v.removeEventListener("loadedmetadata", tryPlay);
       v.removeEventListener("loadeddata", tryPlay);
       v.removeEventListener("canplay", tryPlay);
@@ -705,12 +720,30 @@ join the trenches:`;
       {!revealUi && showPlayFallback && (
         <button
           type="button"
-          className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+5rem)] z-20 mx-auto w-fit rounded-full border border-white/40 bg-black/60 px-5 py-2 text-sm font-semibold text-white backdrop-blur-md"
+          /* Full-screen tap target: in-app browsers (Twitter/X, Instagram, FB,
+             etc.) refuse autoplay until the user gestures. A small bottom pill
+             was easy to miss and the wall-clock reveal would yank it before
+             they noticed. A centred overlay is unmissable and converts the
+             required gesture into a single deliberate action. */
+          className="fixed inset-0 z-20 flex flex-col items-center justify-center bg-black/45 backdrop-blur-[2px]"
           onClick={() => {
             void requestVideoPlay();
           }}
+          aria-label="Tap to play intro"
         >
-          Tap to play intro
+          <span className="flex h-20 w-20 items-center justify-center rounded-full bg-white/95 shadow-2xl">
+            <svg
+              viewBox="0 0 24 24"
+              className="ml-1 h-10 w-10 text-black"
+              fill="currentColor"
+              aria-hidden
+            >
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </span>
+          <span className="mt-5 text-base font-semibold tracking-wide text-white">
+            Tap to play intro
+          </span>
         </button>
       )}
       {!revealUi && <div className="fixed inset-0 z-1 " aria-hidden />}
