@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -59,6 +60,12 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
+/** X (Twitter) Pixel base code from ads.x.com → Tools → Conversion Tracking.
+   Loaded as an `afterInteractive` script so it doesn't block first paint.
+   Only emitted when `NEXT_PUBLIC_X_PIXEL_ID` is set, so preview/local
+   builds without the env var ship no third-party JS. */
+const X_PIXEL_ID = process.env.NEXT_PUBLIC_X_PIXEL_ID;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -71,6 +78,14 @@ export default function RootLayout({
     >
       <body className="flex min-h-dvh flex-col bg-black text-white">
         <main className="flex min-h-0 flex-1 flex-col">{children}</main>
+        {X_PIXEL_ID && (
+          <Script id="x-pixel-base" strategy="afterInteractive">
+            {`!function(e,t,n,s,u,a){e.twq||(s=e.twq=function(){s.exe?s.exe.apply(s,arguments):s.queue.push(arguments);
+},s.version='1.1',s.queue=[],u=t.createElement(n),u.async=!0,u.src='https://static.ads-twitter.com/uwt.js',
+a=t.getElementsByTagName(n)[0],a.parentNode.insertBefore(u,a))}(window,document,'script');
+twq('config','${X_PIXEL_ID}');`}
+          </Script>
+        )}
       </body>
     </html>
   );
