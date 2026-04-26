@@ -110,6 +110,36 @@ function getStoredVerifiedEmail() {
   return safeStorage.get("trencher_verified_email");
 }
 
+/** X (Twitter) Pixel `twq()` is injected by the base script in layout.tsx.
+   Declaring it on `Window` lets us call it without an `any` cast. */
+declare global {
+  interface Window {
+    twq?: (
+      method: string,
+      eventId: string,
+      params?: Record<string, unknown>,
+    ) => void;
+  }
+}
+
+/** Fire the X Pixel signup conversion event. Safe to call when the env vars
+   aren't set (preview builds, local dev) or when the pixel script hasn't
+   loaded yet — the call is no-op'd. */
+function trackXPixelSignup(conversionId: string, email: string) {
+  if (typeof window === "undefined") return;
+  const eventId = process.env.NEXT_PUBLIC_X_PIXEL_SIGNUP_EVENT_ID;
+  if (!eventId) return;
+  if (!window.twq) return;
+  try {
+    window.twq("event", eventId, {
+      conversion_id: conversionId,
+      email_address: email,
+    });
+  } catch {
+    // Pixel calls must never break the signup flow.
+  }
+}
+
 /** Match the middleware's ref-code regex so legacy `?ref=` query links AND
    the new `/CODE` path links both populate the referrer field. */
 const PATH_REF_CODE_PATTERN = /^[a-z0-9]{6,12}$/;
@@ -142,7 +172,10 @@ export default function HomeClient({
   const [isVerified, setIsVerified] = useState(!!initialVerifiedEmail);
   const [copiedReferral, setCopiedReferral] = useState(false);
   const [referralCode, setReferralCode] = useState("");
-  const [referralCount, setReferralCount] = useState(0);
+  /** `null` until we've received a real count from the API. Used as the
+     "data has actually arrived" signal so the card never renders with default
+     placeholders (`""` / `0`) before the dashboard fetch completes. */
+  const [referralCount, setReferralCount] = useState<number | null>(null);
   const [incomingRefCode] = useState(initialRefCode);
   const [submitState, setSubmitState] = useState<{
     loading: boolean;
@@ -175,30 +208,38 @@ export default function HomeClient({
       : "https://trenchers.xyz";
   const myReferralCode = referralCode || normalizedEmail;
   const referralUrl = `${shareUrl}/${encodeURIComponent(myReferralCode)}`;
+  /** Tier math runs unconditionally each render, but the dashboard card itself
+     is gated below on `referralCount !== null`. Coalesce to 0 for the
+     not-yet-loaded case to keep the math typed as `number`. */
+  const safeReferralCount = referralCount ?? 0;
   const tier: "Bronze" | "Silver" | "Gold" | "Diamond" =
-    referralCount >= 50
+    safeReferralCount >= 50
       ? "Diamond"
-      : referralCount >= 15
+      : safeReferralCount >= 15
         ? "Gold"
-        : referralCount >= 3
+        : safeReferralCount >= 3
           ? "Silver"
           : "Bronze";
   const nextTierThreshold =
-    referralCount < 3
+    safeReferralCount < 3
       ? 3
-      : referralCount < 15
+      : safeReferralCount < 15
         ? 15
-        : referralCount < 50
+        : safeReferralCount < 50
           ? 50
           : 50;
   const nextTierLabel: "Silver" | "Gold" | "Diamond" =
-    referralCount < 3 ? "Silver" : referralCount < 15 ? "Gold" : "Diamond";
+    safeReferralCount < 3
+      ? "Silver"
+      : safeReferralCount < 15
+        ? "Gold"
+        : "Diamond";
   const previousTierFloor =
     nextTierThreshold === 50 ? 15 : nextTierThreshold === 15 ? 3 : 0;
   const tierProgressMax = Math.max(1, nextTierThreshold - previousTierFloor);
   const tierProgressCurrent = Math.min(
     tierProgressMax,
-    Math.max(0, referralCount - previousTierFloor),
+    Math.max(0, safeReferralCount - previousTierFloor),
   );
   const tierProgressPercent = Math.min(
     100,
@@ -206,7 +247,7 @@ export default function HomeClient({
   );
   const referralsNeededForNextTier = Math.max(
     0,
-    nextTierThreshold - referralCount,
+    nextTierThreshold - safeReferralCount,
   );
   const onboardedTierClass =
     tier === "Diamond"
@@ -465,8 +506,15 @@ export default function HomeClient({
       if (typeof data.referralCode === "string") {
         setReferralCode(data.referralCode);
       }
+      /** Whenever we're about to flip `isVerified` to true we must also commit
+         a numeric `referralCount` — `null` is the dashboard loader gate, so
+         leaving it `null` after verification would freeze the spinner. */
+      const willBecomeVerified =
+        otpStep === "verify" || (otpStep === "request" && !!data.verified);
       if (typeof data.referralCount === "number") {
         setReferralCount(data.referralCount);
+      } else if (willBecomeVerified) {
+        setReferralCount(0);
       }
       if (otpStep === "request") {
         if (data.verified) {
@@ -490,6 +538,15 @@ export default function HomeClient({
         if (normalizedEmail) {
           safeStorage.set("trencher_verified_email", normalizedEmail);
         }
+        /** Ad-conversion event for X (Twitter) ads campaigns. Fires only on
+           a fresh signup (OTP verification success), not when an already-
+           verified user re-checks their email — that's the `otpStep ===
+           "request" && data.verified` branch above, which is just a re-auth
+           and shouldn't be counted as a conversion. */
+        trackXPixelSignup(
+          data.referralCode ?? normalizedEmail,
+          normalizedEmail,
+        );
       }
     } catch {
       setSubmitState({
@@ -629,9 +686,13 @@ export default function HomeClient({
         if (typeof data.referralCode === "string") {
           setReferralCode(data.referralCode);
         }
-        if (typeof data.referralCount === "number") {
-          setReferralCount(data.referralCount);
-        }
+        /** Always commit a numeric `referralCount` once the verified-user fetch
+           succeeds — `null` is the loader-gate signal, so we must move it off
+           `null` even if the API somehow omits the field, otherwise the
+           spinner spins forever. */
+        setReferralCount(
+          typeof data.referralCount === "number" ? data.referralCount : 0,
+        );
       } catch {
         safeStorage.remove("trencher_verified_email");
         if (!cancelled) setIsVerified(false);
@@ -867,6 +928,25 @@ join the trenches:`;
                 variants={fadeUpVariants}
               >
                 {isVerified ? (
+                  referralCount === null ? (
+                    <div
+                      className="w-full max-w-[480px] rounded-[20px] border border-white/10 bg-gradient-to-br from-black/55 via-black/40 to-black/30 p-8 text-left text-[#fafafa] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-1px_0_rgba(255,255,255,0.06),0_24px_70px_rgba(0,0,0,0.58)] backdrop-blur-2xl [-webkit-backdrop-filter:blur(36px)] max-[420px]:mx-0 max-[420px]:w-full max-[420px]:p-4"
+                      role="status"
+                      aria-live="polite"
+                      aria-label="Loading your trencher dashboard"
+                    >
+                      <div className="flex flex-col items-center justify-center gap-5 py-10">
+                        <div className="relative h-12 w-12">
+                          <div className="absolute inset-0 rounded-full border-2 border-white/10" />
+                          <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-white/85 border-r-white/40" />
+                          <div className="absolute inset-2 rounded-full bg-white/5 blur-md" />
+                        </div>
+                        <p className="text-[10.5px] font-medium tracking-[0.2em] text-white/60 uppercase">
+                          Loading your trench
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
                   <div className="w-full max-w-[480px] rounded-[20px] border border-white/10 bg-gradient-to-br from-black/55 via-black/40 to-black/30 p-8 text-left text-[#fafafa] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-1px_0_rgba(255,255,255,0.06),0_24px_70px_rgba(0,0,0,0.58)] backdrop-blur-2xl [-webkit-backdrop-filter:blur(36px)] max-[420px]:mx-0 max-[420px]:w-full max-[420px]:p-4">
                     <div
                       className={`mb-4 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 ${foundingBadgeClass}`}
@@ -892,7 +972,7 @@ join the trenches:`;
                             TRENCHERS ONBOARDED
                           </p>
                           <p className="mt-2 font-mono text-[36px] leading-none font-medium text-[#fafafa]">
-                            {referralCount}
+                            {safeReferralCount}
                           </p>
                         </div>
                         <div className="text-right">
@@ -912,7 +992,7 @@ join the trenches:`;
                       </div>
                       <div className="mt-2 flex items-center justify-between text-[10.5px] font-medium tracking-[0.12em] text-[#fafafa]">
                         <span>{`${referralsNeededForNextTier} MORE → ${nextTierLabel}`}</span>
-                        <span className="font-mono">{`${Math.min(referralCount, nextTierThreshold)} / ${nextTierThreshold}`}</span>
+                        <span className="font-mono">{`${Math.min(safeReferralCount, nextTierThreshold)} / ${nextTierThreshold}`}</span>
                       </div>
                     </div>
 
@@ -963,6 +1043,7 @@ join the trenches:`;
                       </button>
                     </div>
                   </div>
+                  )
                 ) : (
                   <>
                     <form
